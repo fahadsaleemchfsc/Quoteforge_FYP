@@ -167,20 +167,20 @@ git clone https://github.com/fahadsaleemchfsc/quoteforge-v3.git
 cd quoteforge-v3
 
 # Backend
-cd backend
+cd quoteforge_v3/backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # then fill in SF_CLIENT_ID, SF_CLIENT_SECRET, etc.
-uvicorn app.main:app --reload --port 8000
+cp .env.example .env   # then fill in SALESFORCE_CLIENT_ID, ANTHROPIC_API_KEY, etc.
+uvicorn main:app --reload --port 8000
 
-# Admin portal (separate terminal)
-cd ../admin
+# Admin portal (separate terminal — React app lives at quoteforge_v3/)
+cd ../
 npm install
 npm run dev   # runs on :3000
 
 # Salesforce LWC deployment
-cd ../salesforce
+cd salesforce_package
 sf project deploy start --target-org <your-org-alias>
 ```
 
@@ -197,8 +197,12 @@ sf project deploy start --target-org <your-org-alias>
 final_year_project/
 ├── quoteforge_v3/            ← active project root
 │   ├── backend/
+│   │   ├── main.py                     ← FastAPI entrypoint (uvicorn main:app)
 │   │   ├── app/
-│   │   │   ├── api/                    ← FastAPI routers
+│   │   │   ├── routers/                ← FastAPI routers
+│   │   │   ├── core/                   ← config, database, security
+│   │   │   ├── models/                 ← SQLAlchemy models
+│   │   │   ├── schemas/                ← Pydantic schemas
 │   │   │   ├── services/
 │   │   │   │   ├── salesforce_connector.py
 │   │   │   │   └── insights/
@@ -207,11 +211,13 @@ final_year_project/
 │   │   │   │       ├── trainer.py              ← LightGBM training pipeline
 │   │   │   │       ├── predictor.py            ← prediction + bootstrap CI
 │   │   │   │       └── training_log.py
-│   │   │   └── main.py
+│   │   │   └── seed.py
 │   │   ├── storage/insights_models/    ← per-tenant .pkl files (gitignored)
 │   │   └── quoteforge.db               ← SQLite (gitignored)
-│   ├── admin/                          ← React admin portal
-│   └── salesforce/                     ← LWC + Apex
+│   ├── src/                            ← React admin portal (Vite, runs on :3000)
+│   └── salesforce_package/             ← LWC + Apex (sf project deploy)
+├── scripts/
+│   └── deploy_metadata.sh              ← substitutes secret placeholders into SF metadata
 ├── docs/                               ← FYP deliverables
 │   ├── proposal.docx
 │   ├── srs.docx
