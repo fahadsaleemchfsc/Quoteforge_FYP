@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Compliance_Framework__c</fullName>
+    <label>Compliance Framework</label>
+    <type>MultiselectPicklist</type>
+    <visibleLines>4</visibleLines>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>SOC 2</fullName><default>false</default><label>SOC 2</label></value>
+            <value><fullName>GDPR</fullName><default>false</default><label>GDPR</label></value>
+            <value><fullName>PPRA</fullName><default>false</default><label>PPRA</label></value>
+        </valueSetDefinition>
+    </valueSet>
+    <description>Auto-selected compliance frameworks based on deal region</description>
+</CustomField>

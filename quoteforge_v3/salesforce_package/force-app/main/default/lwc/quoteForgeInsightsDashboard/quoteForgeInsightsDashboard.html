@@ -1,0 +1,90 @@
+<template>
+    <div class="qfid-root">
+
+        <template if:true={isLoading}>
+            <div class="qfid-loading">
+                <lightning-spinner alternative-text="Loading dashboard" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="qfid-error">
+                <div class="qfid-error-title">Dashboard unavailable</div>
+                <div class="qfid-error-body">{errorMessage}</div>
+            </div>
+        </template>
+
+        <template if:true={hasData}>
+            <!-- Pipeline KPI strip -->
+            <div class="qfid-kpi-row">
+                <div class="qfid-kpi">
+                    <div class="qfid-kpi-label">Open deals scored</div>
+                    <div class="qfid-kpi-value">{pipeline.openCount}</div>
+                </div>
+                <div class="qfid-kpi">
+                    <div class="qfid-kpi-label">Avg win probability</div>
+                    <div class="qfid-kpi-value">{pipeline.avgWinDisplay}</div>
+                </div>
+                <div class="qfid-kpi">
+                    <div class="qfid-kpi-label">Pipeline value</div>
+                    <div class="qfid-kpi-value">{pipeline.totalAmountDisplay}</div>
+                </div>
+            </div>
+
+            <!-- Two leaderboards -->
+            <div class="qfid-grid">
+                <section class="qfid-card">
+                    <header class="qfid-card-header">
+                        <div class="qfid-card-title">Top 10 at-risk deals</div>
+                        <div class="qfid-card-sub">Low win probability × high amount — prioritize these first</div>
+                    </header>
+                    <template if:true={hasAtRisk}>
+                        <ul class="qfid-list">
+                            <template for:each={atRiskRows} for:item="row">
+                                <li key={row.opportunity_id}>
+                                    <button class="qfid-row" data-id={row.opportunity_id}
+                                            onclick={openOpportunity} type="button">
+                                        <span class={row.bandDotClass}></span>
+                                        <span class="qfid-pct">{row.percentDisplay}</span>
+                                        <span class="qfid-name">{row.name}</span>
+                                        <span class="qfid-account">{row.account_name}</span>
+                                        <span class="qfid-amount">{row.amountDisplay}</span>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template if:false={hasAtRisk}>
+                        <div class="qfid-empty">No at-risk deals. Pipeline is healthy.</div>
+                    </template>
+                </section>
+
+                <section class="qfid-card">
+                    <header class="qfid-card-header">
+                        <div class="qfid-card-title">Top 10 high-probability deals</div>
+                        <div class="qfid-card-sub">Push these for close — momentum is on your side</div>
+                    </header>
+                    <template if:true={hasICPAligned}>
+                        <ul class="qfid-list">
+                            <template for:each={icpAlignedRows} for:item="row">
+                                <li key={row.opportunity_id}>
+                                    <button class="qfid-row" data-id={row.opportunity_id}
+                                            onclick={openOpportunity} type="button">
+                                        <span class={row.bandDotClass}></span>
+                                        <span class="qfid-pct">{row.percentDisplay}</span>
+                                        <span class="qfid-name">{row.name}</span>
+                                        <span class="qfid-account">{row.account_name}</span>
+                                        <span class="qfid-amount">{row.amountDisplay}</span>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template if:false={hasICPAligned}>
+                        <div class="qfid-empty">No high-probability deals yet. Close some training data first.</div>
+                    </template>
+                </section>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,117 @@
+<template>
+    <lightning-card title="Deal Insights" icon-name="utility:einstein">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium qfd-root">
+
+            <!-- Loading -->
+            <template if:true={isLoading}>
+                <div class="qfd-loading">
+                    <lightning-spinner alternative-text="Scoring deal..." size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Error state (no model, not found, etc.) -->
+            <template if:true={errorMessage}>
+                <div class="qfd-error">
+                    <div class="qfd-error-title">Deal Insights unavailable</div>
+                    <div class="qfd-error-body">{errorMessage}</div>
+                </div>
+            </template>
+
+            <!-- Result -->
+            <template if:true={hasResult}>
+                <div class={bandContainerClass}>
+                    <div class="qfd-pct-big">{percentDisplay}</div>
+                    <div class="qfd-band-label">{bandLabel} probability to win</div>
+                    <template if:true={hasRangeSpread}>
+                        <div class="qfd-range-hint"
+                             title="Wider range indicates the model has limited training data. Predictions will tighten as more deals close.">
+                            limited training data — treat as a range
+                        </div>
+                    </template>
+                    <template if:true={hasICP}>
+                        <div class={icpLineClass}>
+                            <span class="qfd-icp-pct">{icpPercent}%</span>
+                            <span class="qfd-icp-sep">·</span>
+                            <span class="qfd-icp-label">ICP match · {icpBandLabel}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <template if:true={hasExplanation}>
+                    <div class="qfd-explanation">{result.explanation_text}</div>
+                </template>
+                <template if:true={explanationPending}>
+                    <div class="qfd-explanation qfd-explanation-pending">
+                        AI explanation generating in the background…
+                    </div>
+                </template>
+                <template if:true={explanationUnavailable}>
+                    <div class="qfd-explanation qfd-explanation-pending">
+                        Explanation unavailable
+                    </div>
+                </template>
+
+                <button
+                    class="qfd-drivers-toggle"
+                    onclick={toggleDrivers}
+                    type="button"
+                >
+                    <span if:true={showDrivers}>Hide drivers ▲</span>
+                    <span if:false={showDrivers}>See drivers ▼</span>
+                </button>
+
+                <template if:true={showDrivers}>
+                    <div class="qfd-drivers-block">
+                        <template if:true={hasICP}>
+                            <div class="qfd-driver-group">
+                                <div class="qfd-driver-heading">ICP match reasons</div>
+                                <template for:each={icpReasonRows} for:item="r">
+                                    <div class="qfd-icp-reason-row" key={r.factor}>
+                                        <span class={r.statusPillClass}>{r.status}</span>
+                                        <span class="qfd-icp-reason-factor">{r.factorLabel}</span>
+                                        <span class="qfd-icp-reason-detail">{r.detail}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:true={hasPositiveDrivers}>
+                            <div class="qfd-driver-group">
+                                <div class="qfd-driver-heading">Boosting odds</div>
+                                <template for:each={positiveDrivers} for:item="d">
+                                    <div class="qfd-driver-row" key={d.feature}>
+                                        <div class="qfd-driver-name">{d.feature}</div>
+                                        <div class="qfd-driver-bar-wrap">
+                                            <div class="qfd-driver-bar qfd-driver-bar-pos"
+                                                 style={d.barStyle}></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:true={hasNegativeDrivers}>
+                            <div class="qfd-driver-group">
+                                <div class="qfd-driver-heading">Risk factors</div>
+                                <template for:each={negativeDrivers} for:item="d">
+                                    <div class="qfd-driver-row" key={d.feature}>
+                                        <div class="qfd-driver-name">{d.feature}</div>
+                                        <div class="qfd-driver-bar-wrap">
+                                            <div class="qfd-driver-bar qfd-driver-bar-neg"
+                                                 style={d.barStyle}></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <div class="qfd-meta">
+                    <span>Model v{result.model_version}</span>
+                    <span>·</span>
+                    <span>Updated {updatedDisplay}</span>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

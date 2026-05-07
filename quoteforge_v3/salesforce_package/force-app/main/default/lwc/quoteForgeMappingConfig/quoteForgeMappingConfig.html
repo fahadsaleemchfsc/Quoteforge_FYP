@@ -1,0 +1,229 @@
+<template>
+    <div class="qfm-root">
+
+        <!-- Stepper -->
+        <div class={stepperClass}>
+            <span class="qfm-step-chip">1 · Scan</span>
+            <span class="qfm-step-chip">2 · Map</span>
+            <span class="qfm-step-chip">3 · Exclude</span>
+        </div>
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="qfm-loading">
+                <lightning-spinner alternative-text="Scanning your Salesforce schema..." size="small"></lightning-spinner>
+                <div>Scanning your Salesforce schema…</div>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={errorMessage}>
+            <div class="qfm-error">
+                <div class="qfm-error-title">Setup unavailable</div>
+                <div class="qfm-error-body">{errorMessage}</div>
+            </div>
+        </template>
+
+        <!-- Step 1: Scan -->
+        <template if:true={isStep1}>
+            <template if:true={schema}>
+                <div class="qfm-card">
+                    <div class="qfm-card-title">Schema inspection complete</div>
+                    <div class="qfm-card-sub">
+                        <template if:true={schema.connected}>Connected to your Salesforce org.</template>
+                        <template if:false={schema.connected}>Using stock Opportunity schema (no live SF connection detected).</template>
+                    </div>
+                    <div class="qfm-grid">
+                        <div class="qfm-stat">
+                            <div class="qfm-stat-label">Opportunities</div>
+                            <div class="qfm-stat-value">{schema.opportunity_count}</div>
+                        </div>
+                        <div class="qfm-stat">
+                            <div class="qfm-stat-label">Total fields</div>
+                            <div class="qfm-stat-value">{schema.opportunity_fields.length}</div>
+                        </div>
+                        <div class="qfm-stat">
+                            <div class="qfm-stat-label">Custom fields</div>
+                            <div class="qfm-stat-value">{schema.custom_fields.length}</div>
+                        </div>
+                        <div class="qfm-stat">
+                            <div class="qfm-stat-label">Record types</div>
+                            <div class="qfm-stat-value">{schema.record_types.length}</div>
+                        </div>
+                    </div>
+                    <div class="qfm-actions">
+                        <lightning-button variant="brand" label="Continue to mapping"
+                                          onclick={goStep2}></lightning-button>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <!-- Step 2: Map -->
+        <template if:true={isStep2}>
+            <div class="qfm-card">
+                <div class="qfm-card-title">Required fields</div>
+                <div class="qfm-card-sub">These drive the training target + core features. Defaults are auto-suggested.</div>
+                <template for:each={requiredRows} for:item="r">
+                    <div class="qfm-row" key={r.key}>
+                        <div class="qfm-row-label">
+                            <div class="qfm-row-name">{r.label}</div>
+                            <div class="qfm-row-hint">{r.hint}</div>
+                        </div>
+                        <lightning-combobox
+                            data-key={r.key}
+                            value={r.currentValue}
+                            options={fieldOptions}
+                            onchange={handleRequiredChange}
+                            variant="label-hidden"
+                            label="."
+                        ></lightning-combobox>
+                    </div>
+                </template>
+            </div>
+
+            <div class="qfm-card">
+                <div class="qfm-card-title">Optional feature fields</div>
+                <div class="qfm-card-sub">Used as categorical signals. Leave blank to omit.</div>
+                <template for:each={optionalRows} for:item="r">
+                    <div class="qfm-row" key={r.key}>
+                        <div class="qfm-row-label">
+                            <div class="qfm-row-name">{r.label}</div>
+                            <div class="qfm-row-hint">{r.hint}</div>
+                        </div>
+                        <lightning-combobox
+                            data-key={r.key}
+                            value={r.currentValue}
+                            options={fieldOptionsWithNone}
+                            onchange={handleOptionalChange}
+                            variant="label-hidden"
+                            label="."
+                        ></lightning-combobox>
+                    </div>
+                </template>
+            </div>
+
+            <div class="qfm-card">
+                <div class="qfm-card-header-row">
+                    <div>
+                        <div class="qfm-card-title">Custom features</div>
+                        <div class="qfm-card-sub">Pull any custom field from your schema into the model.</div>
+                    </div>
+                    <lightning-button label="Add Custom Feature" variant="neutral"
+                                      onclick={openCustomModal}></lightning-button>
+                </div>
+                <template if:false={hasCustomFields}>
+                    <div class="qfm-empty">No custom features yet.</div>
+                </template>
+                <template if:true={hasCustomFields}>
+                    <table class="qfm-table">
+                        <thead>
+                            <tr>
+                                <th>Salesforce field</th>
+                                <th>Feature name</th>
+                                <th>Type</th>
+                                <th style="width:36px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={customFields} for:item="cf" for:index="idx">
+                                <tr key={cf.sf_field}>
+                                    <td class="qfm-mono">{cf.sf_field}</td>
+                                    <td>{cf.feature_name}</td>
+                                    <td><span class="qfm-pill">{cf.type}</span></td>
+                                    <td>
+                                        <lightning-button-icon icon-name="utility:delete" size="small"
+                                            data-idx={idx} onclick={removeCustomField}
+                                            alternative-text="Remove"></lightning-button-icon>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+            </div>
+
+            <div class="qfm-actions qfm-actions-split">
+                <lightning-button variant="neutral" label="Back" onclick={goStep1}></lightning-button>
+                <lightning-button variant="brand" label="Continue" onclick={goStep3}></lightning-button>
+            </div>
+        </template>
+
+        <!-- Step 3: Exclude -->
+        <template if:true={isStep3}>
+            <div class="qfm-card">
+                <div class="qfm-card-title">Record type exclusions</div>
+                <div class="qfm-card-sub">Uncheck any record type you don't want included in training
+                (e.g. internal / demo Opportunities).</div>
+                <template if:false={hasRecordTypes}>
+                    <div class="qfm-empty">No record types detected. Nothing to exclude.</div>
+                </template>
+                <template if:true={hasRecordTypes}>
+                    <template for:each={recordTypeRows} for:item="rt">
+                        <label class="qfm-rt-row" key={rt.id}>
+                            <input type="checkbox" checked={rt.included}
+                                   data-id={rt.id} onchange={handleRecordTypeToggle} />
+                            <div>
+                                <div class="qfm-row-name">{rt.name}</div>
+                                <div class="qfm-row-hint qfm-mono">{rt.id}</div>
+                            </div>
+                        </label>
+                    </template>
+                </template>
+            </div>
+
+            <template if:true={saveSuccessful}>
+                <div class="qfm-success">
+                    <div class="qfm-success-title">Mapping saved</div>
+                    <div class="qfm-success-body">
+                        Ready to train your model. Head to the Model Management tab (added in Phase 4)
+                        or the QuoteForge Admin at <span class="qfm-mono">/insights/models</span> to retrain.
+                    </div>
+                </div>
+            </template>
+
+            <div class="qfm-actions qfm-actions-split">
+                <lightning-button variant="neutral" label="Back" onclick={goStep2}></lightning-button>
+                <lightning-button variant="brand" label="Save Mapping"
+                                  onclick={handleSave} disabled={isSaving}></lightning-button>
+            </div>
+        </template>
+
+        <!-- Custom field modal -->
+        <template if:true={customModalOpen}>
+            <section class="qfm-modal-backdrop" onclick={closeCustomModal}></section>
+            <section class="qfm-modal">
+                <header class="qfm-modal-header">
+                    <div class="qfm-card-title">Add custom feature</div>
+                    <lightning-button-icon icon-name="utility:close"
+                        onclick={closeCustomModal} size="small"
+                        alternative-text="Close"></lightning-button-icon>
+                </header>
+                <div class="qfm-modal-body">
+                    <lightning-combobox
+                        label="Salesforce field"
+                        options={customFieldCandidates}
+                        value={customDraft.sf_field}
+                        onchange={handleCustomField}
+                    ></lightning-combobox>
+                    <lightning-input
+                        label="Feature name (used inside the model)"
+                        value={customDraft.feature_name}
+                        onchange={handleCustomName}
+                        placeholder="priority"
+                    ></lightning-input>
+                    <lightning-combobox
+                        label="Type"
+                        options={customTypeOptions}
+                        value={customDraft.type}
+                        onchange={handleCustomType}
+                    ></lightning-combobox>
+                </div>
+                <footer class="qfm-modal-footer">
+                    <lightning-button variant="neutral" label="Cancel" onclick={closeCustomModal}></lightning-button>
+                    <lightning-button variant="brand" label="Add feature" onclick={addCustomField}></lightning-button>
+                </footer>
+            </section>
+        </template>
+    </div>
+</template>

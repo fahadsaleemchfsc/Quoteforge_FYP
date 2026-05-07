@@ -1,0 +1,14 @@
+[
+  {
+    "title": "SaaS Platform Proposal Template",
+    "category": "product",
+    "region": "global",
+    "content": "Standard SaaS Platform Engagement Structure:\n\nPhase 1 \u2014 Discovery (1-2 weeks): Requirements gathering, stakeholder interviews, current state assessment, gap analysis, success criteria definition.\n\nPhase 2 \u2014 Design (2-3 weeks): Solution architecture, integration design, data migration plan, security review, compliance mapping.\n\nPhase 3 \u2014 Build (4-6 weeks): Platform configuration, custom development, integration implementation, data migration execution.\n\nPhase 4 \u2014 Test (2 weeks): Functional testing, integration testing, user acceptance testing, performance testing, security validation.\n\nPhase 5 \u2014 Deploy (1-2 weeks): Production deployment, cutover execution, monitoring setup, user training, operational handover.\n\nPhase 6 \u2014 Support (ongoing): Warranty period (90 days), transition to steady-state support, quarterly business reviews, optimization recommendations."
+  },
+  {
+    "title": "Government Procurement Proposal Guidelines",
+    "category": "product",
+    "region": "PK",
+    "content": "Guidelines for Pakistan Government Procurement Proposals:\n\nStructure: Technical proposal and financial proposal must be submitted separately in sealed envelopes (QCBS method - Quality and Cost Based Selection).\n\nTechnical Proposal Must Include: Company profile, team qualifications, methodology, work plan, timeline, past performance references (minimum 3 similar projects), compliance declarations.\n\nFinancial Proposal Must Include: Detailed cost breakdown by deliverable, all applicable taxes clearly stated, payment schedule linked to milestones, validity period (minimum 90 days).\n\nEvaluation Criteria: Technical (typically 70-80%) and Financial (20-30%). Technical minimum qualifying score is usually 70/100.\n\nRequired Certifications: NTN (National Tax Number), STRN (Sales Tax Registration), PEC registration (for engineering firms), active bank account details."
+  }
+]

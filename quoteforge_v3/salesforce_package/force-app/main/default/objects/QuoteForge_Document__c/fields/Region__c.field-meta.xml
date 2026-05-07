@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Region__c</fullName>
+    <label>Region</label>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>US</fullName><default>true</default><label>US</label></value>
+            <value><fullName>EU</fullName><default>false</default><label>EU</label></value>
+            <value><fullName>PK</fullName><default>false</default><label>PK</label></value>
+            <value><fullName>Global</fullName><default>false</default><label>Global</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

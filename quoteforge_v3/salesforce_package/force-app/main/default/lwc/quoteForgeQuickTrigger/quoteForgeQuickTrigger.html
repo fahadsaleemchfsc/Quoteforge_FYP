@@ -1,0 +1,73 @@
+<template>
+    <lightning-card title="QuoteForge — Generate Quote" icon-name="utility:quote">
+
+        <div class="slds-p-around_medium">
+
+            <template if:false={isProcessing}>
+                <template if:false={isComplete}>
+
+                    <p class="slds-text-body_small slds-m-bottom_small slds-text-color_weak">
+                        Type a deal name, Salesforce ID, or client name. We'll do the rest.
+                    </p>
+
+                    <lightning-input
+                        type="search"
+                        name="identifier"
+                        label="Deal or Client"
+                        placeholder="e.g. Acme Corp, 006gL00000..., or Dickenson Mobile Generators"
+                        value={identifier}
+                        onchange={handleInput}
+                        onkeyup={handleKeyup}
+                    ></lightning-input>
+
+                    <div class="slds-m-top_medium">
+                        <lightning-button
+                            variant="brand"
+                            label="Generate Proposal"
+                            icon-name="utility:magicwand"
+                            onclick={handleGenerate}
+                            disabled={isInputEmpty}
+                        ></lightning-button>
+                    </div>
+
+                </template>
+            </template>
+
+            <template if:true={isProcessing}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <lightning-spinner alternative-text="Generating..." size="medium"></lightning-spinner>
+                    <p class="slds-m-left_medium slds-text-body_regular">{statusMessage}</p>
+                </div>
+            </template>
+
+            <template if:true={isComplete}>
+                <div class="slds-box slds-theme_success">
+                    <p class="slds-text-heading_small">
+                        <lightning-icon icon-name="utility:success" variant="inverse" size="small"></lightning-icon>
+                        &nbsp;Generated!
+                    </p>
+                    <p class="slds-text-body_regular slds-m-top_x-small">
+                        Document: <b>{generatedDocId}</b><br/>
+                        Client: <b>{resolvedClient}</b><br/>
+                        Total: <b>${totalAmount}</b><br/>
+                        Valid Until: <b>{validUntilDisplay}</b>
+                    </p>
+                </div>
+
+                <div class="slds-m-top_medium">
+                    <lightning-button variant="brand" label="Download PDF" icon-name="utility:download" onclick={handleDownload}></lightning-button>
+                    <lightning-button variant="neutral" label="Approve & Learn" icon-name="utility:like" onclick={handleApprove} class="slds-m-left_x-small"></lightning-button>
+                    <lightning-button variant="neutral" label="Generate Another" icon-name="utility:add" onclick={handleReset} class="slds-m-left_x-small"></lightning-button>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="slds-box slds-theme_error slds-m-top_small">
+                    <p class="slds-text-body_small">{errorMessage}</p>
+                    <lightning-button variant="neutral" label="Try Again" onclick={handleReset} class="slds-m-top_x-small"></lightning-button>
+                </div>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>

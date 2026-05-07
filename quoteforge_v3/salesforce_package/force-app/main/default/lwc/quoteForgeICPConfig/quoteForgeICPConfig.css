@@ -1,0 +1,126 @@
+.qfic-root { padding: 16px; font-size: 13px; color: #1b2031; }
+.qfic-loading { display: flex; justify-content: center; padding: 48px; }
+
+.qfic-layout {
+    display: grid; grid-template-columns: 280px 1fr; gap: 14px;
+}
+
+/* ── List panel ────────────────────────────────────────── */
+.qfic-list-panel {
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 4px;
+    max-height: 700px; overflow-y: auto;
+}
+.qfic-list-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; border-bottom: 1px solid #F4F4F6;
+}
+.qfic-list-title { font-size: 13px; font-weight: 600; color: #1b2031; }
+.qfic-empty { padding: 20px; color: #6A6F80; font-size: 11.5px; text-align: center; }
+
+.qfic-list { list-style: none; margin: 0; padding: 0; }
+.qfic-list-row { border-bottom: 1px solid #F4F4F6; }
+.qfic-list-row-selected { background: #EEF2FF; }
+.qfic-list-btn {
+    display: block; width: 100%; text-align: left;
+    padding: 10px 12px; background: transparent; border: none;
+    font: inherit; cursor: pointer; color: inherit;
+}
+.qfic-list-btn:hover { background: #F8FAFF; }
+.qfic-list-name-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.qfic-list-name { font-weight: 600; font-size: 12.5px; }
+.qfic-active-badge {
+    font-size: 10px; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    background: #DCFCE7; color: #14532D;
+    padding: 1px 6px; border-radius: 2px;
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+.qfic-list-desc { font-size: 11px; color: #6A6F80; margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Editor panel ──────────────────────────────────────── */
+.qfic-editor { display: flex; flex-direction: column; gap: 14px; }
+
+.qfic-card {
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 4px;
+}
+.qfic-card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 10px 14px; border-bottom: 1px solid #F4F4F6; background: #FAFAFB;
+}
+.qfic-card-title { font-size: 13px; font-weight: 600; color: #1b2031; }
+.qfic-card-sub { font-size: 11.5px; color: #6A6F80; margin-top: 2px; }
+.qfic-card-actions { display: flex; gap: 6px; align-items: center; }
+.qfic-card-body { padding: 12px 14px; }
+
+.qfic-section-label {
+    margin-top: 12px; margin-bottom: 6px;
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #6A6F80; font-weight: 600;
+}
+.qfic-section-label:first-child { margin-top: 0; }
+
+.qfic-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.qfic-weights { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.qfic-weight-row {
+    display: grid; grid-template-columns: 160px 1fr 48px;
+    align-items: center; gap: 10px;
+    font-size: 12px;
+}
+.qfic-weight-val {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 12px; text-align: right; color: #3B3977;
+}
+
+.qfic-save-row { margin-top: 14px; display: flex; justify-content: flex-end; }
+
+/* ── Test panel ────────────────────────────────────────── */
+.qfic-test-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 10px;
+    align-items: end;
+}
+.qfic-test-error {
+    margin-top: 10px; padding: 10px;
+    background: #FEF2F2; border-left: 3px solid #DC2626; border-radius: 3px;
+    color: #7F1D1D; font-size: 12px;
+}
+.qfic-test-result { margin-top: 12px; }
+.qfic-test-headline {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;
+}
+.qfic-test-pct {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 28px; font-weight: 700; color: #1b2031;
+}
+.qfic-test-band {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 3px; font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}
+.qfic-test-band-strong  { background: #DCFCE7; color: #14532D; }
+.qfic-test-band-partial { background: #FEF3C7; color: #713F12; }
+.qfic-test-band-weak    { background: #FEE2E2; color: #7F1D1D; }
+.qfic-test-icp { font-size: 11.5px; color: #6A6F80; }
+
+.qfic-test-reasons { list-style: none; margin: 0; padding: 0; }
+.qfic-test-reasons li {
+    display: grid; grid-template-columns: 100px 70px 1fr;
+    align-items: start; gap: 8px; padding: 5px 0;
+    font-size: 12px;
+}
+.qfic-test-factor {
+    font-size: 10.5px; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    text-transform: uppercase; color: #6A6F80; letter-spacing: 0.05em; padding-top: 2px;
+}
+.qfic-test-detail { color: #52525B; font-size: 11.5px; }
+.qfic-pill {
+    font-size: 10px; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 2px 6px; border-radius: 2px;
+    text-align: center; font-weight: 600;
+}
+.qfic-pill-match    { background: #DCFCE7; color: #14532D; }
+.qfic-pill-partial  { background: #FEF3C7; color: #713F12; }
+.qfic-pill-mismatch { background: #FEE2E2; color: #7F1D1D; }

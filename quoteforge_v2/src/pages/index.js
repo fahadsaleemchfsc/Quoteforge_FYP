@@ -1,0 +1,9 @@
+export { default as Dashboard } from './Dashboard';
+export { default as Templates } from './Templates';
+export { default as Pricing } from './Pricing';
+export { default as Prompts } from './Prompts';
+export { default as CRM } from './CRM';
+export { default as Documents } from './Documents';
+export { default as Users } from './Users';
+export { default as Settings } from './Settings';
+export { default as Login } from './Login';

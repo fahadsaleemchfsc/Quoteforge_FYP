@@ -1,0 +1,203 @@
+<template>
+    <lightning-card title="QuoteForge Prompt Builder" icon-name="utility:einstein">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium qf-root">
+
+            <!-- Context chips — contact + optional linked Opportunity -->
+            <div class="qf-chips slds-m-bottom_small" if:true={contextChipsVisible}>
+                <span class="qf-chip" if:true={contactLabel}>
+                    <lightning-icon icon-name="standard:contact" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                    {contactLabel}
+                </span>
+                <span class="qf-chip" if:true={selectedOppLabel}>
+                    <lightning-icon icon-name="standard:opportunity" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                    {selectedOppLabel}
+                </span>
+                <span class="qf-chip qf-chip-muted" if:true={parseSource}>parsed via {parseSource}</span>
+            </div>
+
+            <!-- Prompt entry -->
+            <template if:false={hasResult}>
+                <lightning-textarea
+                    name="promptText"
+                    label="Describe the quote in plain English"
+                    placeholder="e.g. Quote Acme Corp for 5x ENT-LIC plus ONBOARD-STD. Pakistan region."
+                    value={promptText}
+                    onchange={handlePromptChange}
+                    max-length="3000"
+                    class="qf-textarea"
+                ></lightning-textarea>
+
+                <div class="qf-examples slds-m-top_x-small">
+                    <span class="qf-examples-label">Try:</span>
+                    <template for:each={examples} for:item="ex">
+                        <button
+                            key={ex.id}
+                            class="qf-chip-btn"
+                            data-id={ex.id}
+                            onclick={useExample}
+                            type="button"
+                        >{ex.label}</button>
+                    </template>
+                </div>
+
+                <!-- Optional Opportunity link -->
+                <div class="slds-m-top_small">
+                    <lightning-record-picker
+                        label="Link to Opportunity (optional)"
+                        placeholder="Search Opportunities…"
+                        object-api-name="Opportunity"
+                        onchange={handleOpportunityPick}
+                        value={selectedOpportunityId}
+                    ></lightning-record-picker>
+                </div>
+
+                <div class="slds-m-top_medium slds-grid slds-grid_align-end">
+                    <lightning-button
+                        variant="brand"
+                        label={submitLabel}
+                        disabled={submitDisabled}
+                        onclick={handleSubmit}
+                    ></lightning-button>
+                </div>
+            </template>
+
+            <!-- Loading state -->
+            <template if:true={isProcessing}>
+                <div class="qf-loading">
+                    <lightning-spinner alternative-text="Generating quote..." size="small"></lightning-spinner>
+                    <div class="qf-loading-text">{statusMessage}</div>
+                </div>
+            </template>
+
+            <!-- Error -->
+            <template if:true={hasError}>
+                <div class="qf-error">
+                    <div class="qf-error-title">Error</div>
+                    <div class="qf-error-body">{errorMessage}</div>
+                    <lightning-button
+                        variant="neutral"
+                        label="Try again"
+                        onclick={handleReset}
+                        class="slds-m-top_x-small"
+                    ></lightning-button>
+                </div>
+            </template>
+
+            <!-- Preview: guardrail BLOCK -->
+            <template if:true={showBlocked}>
+                <div class="qf-guardrail qf-guardrail-block">
+                    <div class="qf-guardrail-title">Guardrails blocked this quote</div>
+                    <div class="qf-guardrail-reason">{guardrailReason}</div>
+                    <lightning-button
+                        variant="neutral"
+                        label="Rewrite prompt"
+                        onclick={handleReset}
+                        class="slds-m-top_x-small"
+                    ></lightning-button>
+                </div>
+            </template>
+
+            <!-- Preview: guardrail PASS / REVIEW (shows line items + verdict) -->
+            <template if:true={showPreview}>
+                <div class="qf-verdict-row">
+                    <span class={verdictBadgeClass}>{verdictBadgeText}</span>
+                    <span class="qf-parse-hint">parsed via {parseSource}</span>
+                </div>
+
+                <table class="qf-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Product</th>
+                            <th class="qf-num">Qty</th>
+                            <th class="qf-num">Unit</th>
+                            <th class="qf-num">Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={lineItemsDisplay} for:item="li">
+                            <tr key={li.sku}>
+                                <td class="qf-mono">{li.sku}</td>
+                                <td>{li.product_name}</td>
+                                <td class="qf-num qf-mono">{li.quantity}</td>
+                                <td class="qf-num qf-mono">{li.unit_price_display}</td>
+                                <td class="qf-num qf-mono">{li.line_total_display}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+                <div class="qf-totals">
+                    <div><span>Subtotal</span><span class="qf-mono">{subtotalDisplay}</span></div>
+                    <div if:true={hasDiscount}><span>Discount</span><span class="qf-mono qf-neg">−{discountDisplay}</span></div>
+                    <div if:true={hasTax}><span>Tax</span><span class="qf-mono">{taxDisplay}</span></div>
+                    <div class="qf-total"><span>Total</span><span class="qf-mono">{totalDisplay}</span></div>
+                </div>
+
+                <div class="qf-meta">
+                    <div><span>Client</span><span>{result.client_name}</span></div>
+                    <div><span>Region</span><span class="qf-mono">{result.region}</span></div>
+                    <div><span>Valid until</span><span class="qf-mono">{validUntilDisplay}</span></div>
+                    <div><span>Offer ID</span><span class="qf-mono qf-tiny">{result.offer_id}</span></div>
+                </div>
+
+                <div class="qf-actions slds-m-top_medium">
+                    <lightning-button
+                        variant="destructive-text"
+                        label="Reject"
+                        onclick={handleReset}
+                    ></lightning-button>
+                    <lightning-button
+                        variant="neutral"
+                        label="Edit prompt"
+                        onclick={handleEdit}
+                        class="slds-m-left_x-small"
+                    ></lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        label={approveLabel}
+                        onclick={handleApprove}
+                        disabled={isCommitting}
+                        class="slds-m-left_x-small"
+                    ></lightning-button>
+                </div>
+            </template>
+
+            <!-- Committed -->
+            <template if:true={isCommitted}>
+                <div class="qf-success">
+                    <div class="qf-success-title">Quote committed</div>
+                    <div class="qf-success-body">
+                        Document <span class="qf-mono">{commitResult.document_id}</span>
+                        <span if:true={commitResult.committed_at}>
+                            · committed {commitResult.committed_at}
+                        </span>
+                    </div>
+                    <div class="qf-actions slds-m-top_small">
+                        <lightning-button
+                            variant="neutral"
+                            label="New quote"
+                            onclick={handleReset}
+                        ></lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Open Opportunity"
+                            onclick={handleOpenOpp}
+                            if:true={selectedOpportunityId}
+                            class="slds-m-left_x-small"
+                        ></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Pending approval -->
+            <template if:true={isPendingApproval}>
+                <div class="qf-warning">
+                    <div class="qf-warning-title">Pending approval</div>
+                    <div class="qf-warning-body">{commitResult.message}</div>
+                </div>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>

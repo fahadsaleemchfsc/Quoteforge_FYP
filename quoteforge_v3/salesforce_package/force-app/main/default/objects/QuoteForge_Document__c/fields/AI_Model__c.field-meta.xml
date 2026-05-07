@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AI_Model__c</fullName>
+    <label>AI Model</label>
+    <type>Text</type>
+    <length>100</length>
+    <description>The LLM model used for generation (e.g., mistral-7b, llama-3.2)</description>
+</CustomField>

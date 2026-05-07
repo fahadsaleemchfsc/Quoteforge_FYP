@@ -1,0 +1,168 @@
+<template>
+    <div class="qfs-root">
+
+        <template if:true={isLoading}>
+            <div class="qfs-loading">
+                <lightning-spinner alternative-text="Loading status" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+
+            <!-- ── Connection panel ───────────────────────────── -->
+            <section class="qfs-card">
+                <header class="qfs-card-header">
+                    <div>
+                        <div class="qfs-card-title">Connection</div>
+                        <div class="qfs-card-sub">Backend endpoint via Named Credential</div>
+                    </div>
+                    <button class="qfs-refresh-btn" onclick={handleRefresh} type="button">
+                        <lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon>
+                        <span>Refresh</span>
+                    </button>
+                </header>
+                <div class="qfs-card-body">
+                    <div class="qfs-row">
+                        <span class="qfs-label">Status</span>
+                        <span class="qfs-value">
+                            <span class={statusDotClass}></span>
+                            {statusLabel}
+                        </span>
+                    </div>
+                    <template if:true={status.backend_version}>
+                        <div class="qfs-row">
+                            <span class="qfs-label">Backend version</span>
+                            <span class="qfs-value qfs-mono">{status.backend_service} v{status.backend_version}</span>
+                        </div>
+                    </template>
+                    <div class="qfs-row">
+                        <span class="qfs-label">Named Credential</span>
+                        <span class="qfs-value qfs-mono">{status.named_credential}</span>
+                    </div>
+                    <template if:true={status.backend_error}>
+                        <div class="qfs-error-inline">
+                            <strong>Error:</strong> {status.backend_error}
+                        </div>
+                    </template>
+                    <div class="qfs-actions">
+                        <a class="qfs-btn qfs-btn-primary"
+                           href="/lightning/setup/NamedCredential/home"
+                           target="_top">
+                            Open Named Credential in Setup
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Installation checklist ─────────────────────── -->
+            <section class="qfs-card">
+                <header class="qfs-card-header">
+                    <div>
+                        <div class="qfs-card-title">Installation checklist</div>
+                        <div class="qfs-card-sub">Verify the QuoteForge org is ready for the demo</div>
+                    </div>
+                </header>
+                <div class="qfs-card-body">
+                    <ul class="qfs-checklist">
+                        <template for:each={checks} for:item="c">
+                            <li key={c.label} class={c.rowClass}>
+                                <span class="qfs-check-icon">{c.icon}</span>
+                                <div class="qfs-check-body">
+                                    <div class="qfs-check-label">{c.label}</div>
+                                    <template if:true={c.hint}>
+                                        <div class="qfs-check-hint">{c.hint}</div>
+                                    </template>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ── Active model summary ───────────────────────── -->
+            <template if:true={hasActiveModel}>
+                <section class="qfs-card">
+                    <header class="qfs-card-header">
+                        <div>
+                            <div class="qfs-card-title">Deal Insights — active model</div>
+                            <div class="qfs-card-sub">Latest trained LightGBM classifier for this tenant</div>
+                        </div>
+                    </header>
+                    <div class="qfs-card-body">
+                        <div class="qfs-grid-metrics">
+                            <div class="qfs-metric">
+                                <div class="qfs-metric-label">Version</div>
+                                <div class="qfs-metric-value qfs-mono">v{activeModel.version}</div>
+                            </div>
+                            <div class="qfs-metric">
+                                <div class="qfs-metric-label">Accuracy</div>
+                                <div class="qfs-metric-value qfs-mono">{accuracyDisplay}</div>
+                            </div>
+                            <div class="qfs-metric">
+                                <div class="qfs-metric-label">ROC AUC</div>
+                                <div class="qfs-metric-value qfs-mono">{aucDisplay}</div>
+                            </div>
+                            <div class="qfs-metric">
+                                <div class="qfs-metric-label">Training rows</div>
+                                <div class="qfs-metric-value qfs-mono">{trainingRowsDisplay}</div>
+                            </div>
+                        </div>
+                        <div class="qfs-row qfs-row-slim">
+                            <span class="qfs-label">Trained</span>
+                            <span class="qfs-value qfs-dim">{trainedAtDisplay}</span>
+                        </div>
+                    </div>
+                </section>
+            </template>
+
+            <!-- ── Configuration pointer ──────────────────────── -->
+            <section class="qfs-card">
+                <header class="qfs-card-header">
+                    <div>
+                        <div class="qfs-card-title">Configuration</div>
+                        <div class="qfs-card-sub">Where each setting lives</div>
+                    </div>
+                </header>
+                <div class="qfs-card-body">
+                    <table class="qfs-config-table">
+                        <thead>
+                            <tr>
+                                <th>What</th>
+                                <th>Where it lives</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Backend URL (rotate tunnel, sandbox vs. prod)</td>
+                                <td><span class="qfs-mono">Setup → Named Credentials → QuoteForge_API</span></td>
+                            </tr>
+                            <tr>
+                                <td>Deal Insights field mapping + ICP fields</td>
+                                <td>QuoteForge Admin → <span class="qfs-mono">/insights/setup</span></td>
+                            </tr>
+                            <tr>
+                                <td>Model training + retraining</td>
+                                <td>QuoteForge Admin → <span class="qfs-mono">/insights/models</span></td>
+                            </tr>
+                            <tr>
+                                <td>Pricing rules, guardrails, agent-exposed products</td>
+                                <td>QuoteForge Admin → <span class="qfs-mono">/guardrails</span>, <span class="qfs-mono">/pricing</span>, <span class="qfs-mono">/products</span></td>
+                            </tr>
+                            <tr>
+                                <td>Rep-facing quote + insight LWCs</td>
+                                <td>Lightning App Builder → Opportunity / Contact record pages</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="qfs-admin-note">
+                        The QuoteForge Admin runs at the same domain configured in your
+                        <span class="qfs-mono">QuoteForge_API</span> Named Credential, without the
+                        <span class="qfs-mono">/api</span> path. Open it in a new browser tab to
+                        configure mapping, run training, or tune pricing rules.
+                    </div>
+                </div>
+            </section>
+
+        </template>
+    </div>
+</template>

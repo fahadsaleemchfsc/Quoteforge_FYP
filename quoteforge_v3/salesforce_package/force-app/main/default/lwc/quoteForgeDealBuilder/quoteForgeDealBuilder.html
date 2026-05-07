@@ -1,0 +1,162 @@
+<template>
+    <lightning-card title="QuoteForge Deal Builder" icon-name="standard:opportunity">
+
+        <!-- Tagline -->
+        <div class="slds-p-horizontal_medium slds-text-body_small slds-text-color_weak">
+            Describe the deal in plain English. AI will extract details and create an Opportunity.
+        </div>
+
+        <div class="slds-p-around_medium">
+
+            <!-- ─── Step 1: Prompt Input ─── -->
+            <template if:false={isProcessing}>
+                <template if:false={hasResult}>
+                    <lightning-textarea
+                        name="prompt"
+                        label="Describe the deal"
+                        placeholder="Example: Create a proposal for Acme Corp. They need an Enterprise License for $50,000, Implementation Services for $15,000, and Annual Support for $10,000."
+                        value={promptText}
+                        onchange={handlePromptChange}
+                        max-length="2000"
+                        rows="5"
+                    ></lightning-textarea>
+
+                    <!-- Quick example chips -->
+                    <div class="slds-m-top_small slds-text-body_small">
+                        <span class="slds-text-color_weak">Try:</span>
+                        <template for:each={examples} for:item="ex">
+                            <a key={ex.id} onclick={useExample} data-id={ex.id} class="slds-m-left_x-small">
+                                {ex.label}
+                            </a>
+                        </template>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="slds-m-top_medium slds-grid slds-gutters">
+                        <div class="slds-col">
+                            <lightning-button
+                                variant="neutral"
+                                label="Preview Extraction"
+                                icon-name="utility:preview"
+                                onclick={handlePreview}
+                                disabled={isPromptEmpty}
+                                class="slds-m-right_x-small"
+                            ></lightning-button>
+                            <lightning-button
+                                variant="brand"
+                                label="Create Deal + Proposal"
+                                icon-name="utility:magicwand"
+                                onclick={handleCreate}
+                                disabled={isPromptEmpty}
+                            ></lightning-button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ─── Loading State ─── -->
+            <template if:true={isProcessing}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <lightning-spinner alternative-text="Processing..." size="medium"></lightning-spinner>
+                    <p class="slds-m-left_medium slds-text-body_regular">{statusMessage}</p>
+                </div>
+            </template>
+
+            <!-- ─── Preview State (Before Creating) ─── -->
+            <template if:true={showPreview}>
+                <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">
+                        <lightning-icon icon-name="utility:info" size="x-small"></lightning-icon>
+                        &nbsp;AI Extracted:
+                    </h3>
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-2 slds-p-vertical_x-small">
+                            <strong>Client:</strong> {parsed.client_name}
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-vertical_x-small">
+                            <strong>Region:</strong> {parsed.region}
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-vertical_x-small">
+                            <strong>Total:</strong> ${parsedTotal}
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-vertical_x-small">
+                            <strong>Items:</strong> {lineItemCount}
+                        </div>
+                    </div>
+
+                    <template if:true={parsed.line_items.length}>
+                        <ul class="slds-m-top_small slds-text-body_small">
+                            <template for:each={parsed.line_items} for:item="item" for:index="idx">
+                                <li key={item.product} class="slds-p-vertical_xx-small">
+                                    • {item.product} — ${item.unit_price}
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+
+                    <div class="slds-m-top_small">
+                        <lightning-button variant="brand" label="Looks Good — Create It" onclick={handleCreate}></lightning-button>
+                        <lightning-button variant="neutral" label="Edit Prompt" onclick={handleReset} class="slds-m-left_x-small"></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ─── Success State ─── -->
+            <template if:true={isComplete}>
+                <div class="slds-box slds-theme_success slds-m-bottom_medium">
+                    <h3 class="slds-text-heading_small">
+                        <lightning-icon icon-name="utility:success" variant="inverse" size="small"></lightning-icon>
+                        &nbsp;Deal Created!
+                    </h3>
+                    <div class="slds-text-body_regular slds-m-top_x-small">
+                        <p>✓ Opportunity created in Salesforce</p>
+                        <p>✓ Account linked</p>
+                        <p>✓ Proposal generated ({generatedDocId})</p>
+                        <p>✓ Valid until: {validUntilDisplay}</p>
+                    </div>
+                </div>
+
+                <!-- Pricing Summary -->
+                <template if:true={pricingData}>
+                    <div class="slds-box slds-m-top_small">
+                        <h4 class="slds-text-heading_small slds-m-bottom_small">Pricing</h4>
+                        <div class="slds-grid slds-gutters slds-text-body_small">
+                            <div class="slds-col">Subtotal:</div>
+                            <div class="slds-col slds-text-align_right">${pricingData.subtotal}</div>
+                        </div>
+                        <template if:true={pricingData.discount}>
+                            <div class="slds-grid slds-gutters slds-text-body_small slds-text-color_success">
+                                <div class="slds-col">Discount:</div>
+                                <div class="slds-col slds-text-align_right">-${pricingData.discount}</div>
+                            </div>
+                        </template>
+                        <div class="slds-grid slds-gutters slds-text-body_small">
+                            <div class="slds-col">Tax:</div>
+                            <div class="slds-col slds-text-align_right">${pricingData.tax}</div>
+                        </div>
+                        <hr/>
+                        <div class="slds-grid slds-gutters slds-text-heading_small">
+                            <div class="slds-col"><strong>Total:</strong></div>
+                            <div class="slds-col slds-text-align_right"><strong>${pricingData.total}</strong></div>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="slds-m-top_medium">
+                    <lightning-button variant="brand" label="View Opportunity" icon-name="utility:new_window" onclick={handleViewOpportunity}></lightning-button>
+                    <lightning-button variant="neutral" label="Download PDF" icon-name="utility:download" onclick={handleDownload} class="slds-m-left_x-small"></lightning-button>
+                    <lightning-button variant="neutral" label="Create Another" icon-name="utility:add" onclick={handleReset} class="slds-m-left_x-small"></lightning-button>
+                </div>
+            </template>
+
+            <!-- ─── Error State ─── -->
+            <template if:true={hasError}>
+                <div class="slds-box slds-theme_error slds-m-top_medium">
+                    <p class="slds-text-body_small">{errorMessage}</p>
+                    <lightning-button variant="neutral" label="Try Again" onclick={handleReset} class="slds-m-top_x-small"></lightning-button>
+                </div>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>

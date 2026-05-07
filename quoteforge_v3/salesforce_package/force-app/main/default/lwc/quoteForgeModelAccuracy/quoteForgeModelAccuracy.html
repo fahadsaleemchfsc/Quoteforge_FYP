@@ -1,0 +1,129 @@
+<template>
+    <div class="qfma-root">
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="qfma-loading">
+                <lightning-spinner alternative-text="Loading accuracy data" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={errorMessage}>
+            <div class="qfma-error">
+                <div class="qfma-error-title">Accuracy view unavailable</div>
+                <div class="qfma-error-body">{errorMessage}</div>
+                <lightning-button variant="neutral" label="Refresh"
+                    onclick={refresh} class="slds-m-top_x-small"></lightning-button>
+            </div>
+        </template>
+
+        <template if:true={hasData}>
+
+            <!-- Header -->
+            <div class="qfma-header">
+                <div>
+                    <div class="qfma-title">Model Accuracy</div>
+                    <div class="qfma-sub">{headerLine}</div>
+                </div>
+                <template if:true={showRetrainCallout}>
+                    <span class="qfma-chip-warn">Retrain recommended</span>
+                </template>
+            </div>
+
+            <!-- Holdout metrics -->
+            <section class="qfma-section">
+                <div class="qfma-section-title">Holdout performance</div>
+                <div class="qfma-section-sub">{holdoutSubtitle}</div>
+                <div class="qfma-metric-grid">
+                    <div class="qfma-metric">
+                        <div class="qfma-metric-label">Accuracy</div>
+                        <div class="qfma-metric-value">{accuracyDisplay}</div>
+                    </div>
+                    <div class="qfma-metric">
+                        <div class="qfma-metric-label">Precision</div>
+                        <div class="qfma-metric-value">{precisionDisplay}</div>
+                    </div>
+                    <div class="qfma-metric">
+                        <div class="qfma-metric-label">Recall</div>
+                        <div class="qfma-metric-value">{recallDisplay}</div>
+                    </div>
+                    <div class="qfma-metric">
+                        <div class="qfma-metric-label">AUC</div>
+                        <div class="qfma-metric-value">{aucDisplay}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Accuracy by confidence bucket -->
+            <section class="qfma-section">
+                <div class="qfma-section-title">Accuracy by confidence bucket</div>
+                <div class="qfma-section-sub">
+                    When the model says 80%+, it's right 92% of the time. When it says 40-60%,
+                    it's genuinely uncertain — treat those as "unclear, do the work."
+                </div>
+                <table class="qfma-table">
+                    <thead>
+                        <tr>
+                            <th>Model's confidence</th>
+                            <th class="qfma-num">Deals</th>
+                            <th>Actually won</th>
+                            <th>Match</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={bucketRows} for:item="b">
+                            <tr key={b.bucket} class={b.rowClass}>
+                                <td class="qfma-mono">{b.bucket}</td>
+                                <td class="qfma-num qfma-mono">{b.count}</td>
+                                <td>{b.actualDisplay}</td>
+                                <td>{b.matchLabel}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Recent deals check -->
+            <section class="qfma-section">
+                <div class="qfma-section-title">Recent deals check</div>
+                <div class="qfma-section-sub">Last 10 closed deals with their predictions at close.</div>
+                <table class="qfma-table">
+                    <thead>
+                        <tr>
+                            <th>Deal</th>
+                            <th>Predicted at close</th>
+                            <th>Actual</th>
+                            <th>Hit?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={recentRows} for:item="d">
+                            <tr key={d.sf_opportunity_id} class="qfma-clickable-row"
+                                data-id={d.sf_opportunity_id} onclick={openOpportunity}>
+                                <td class="qfma-mono">{d.displayName}</td>
+                                <td class="qfma-mono">{d.predictedDisplay}</td>
+                                <td>{d.actualDisplay}</td>
+                                <td class={d.hitClass}>{d.hitIcon}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Retrain callout (conditional) -->
+            <template if:true={showRetrainCallout}>
+                <section class="qfma-retrain">
+                    <div class="qfma-retrain-title">Time to retrain</div>
+                    <div class="qfma-retrain-body">
+                        {retrainReason}. We recommend retraining to incorporate recent patterns.
+                    </div>
+                    <lightning-button variant="brand" label="Retrain Now"
+                        onclick={handleRetrain} disabled={isRetraining}
+                        class="slds-m-top_small"></lightning-button>
+                </section>
+            </template>
+
+        </template>
+    </div>
+</template>

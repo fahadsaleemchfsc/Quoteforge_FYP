@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#5B21B6</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <defaultLandingTab>QuoteForge_Dashboard</defaultLandingTab>
+    <description>Agentic Commerce Gateway — buyer-agent MCP, AI quote generation, and deal-insights predictions in one workspace.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <label>QuoteForge</label>
+    <navType>Standard</navType>
+    <!-- Phase 4 tab order: rep-facing views first, admin views next, -->
+    <!-- standard objects, Settings last. quoteForgeAppHome retired.  -->
+    <tabs>QuoteForge_Dashboard</tabs>
+    <tabs>QuoteForge_Predictions</tabs>
+    <tabs>QuoteForge_ICPConfig</tabs>
+    <tabs>QuoteForge_ModelMgmt</tabs>
+    <tabs>QuoteForge_Mapping</tabs>
+    <tabs>QuoteForge_Accuracy</tabs>
+    <tabs>standard-Opportunity</tabs>
+    <tabs>standard-Contact</tabs>
+    <tabs>standard-Account</tabs>
+    <tabs>QuoteForge_Settings</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

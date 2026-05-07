@@ -1,0 +1,87 @@
+/*
+ * QuoteForge design tokens.
+ *
+ * Every color in the app references these variables. When you want to tweak
+ * the palette, edit here — no file-by-file search-and-replace required.
+ *
+ * Themes are switched by setting `data-theme="light"` or `data-theme="dark"`
+ * on <html>. The `system` option resolves to one of the two at runtime via
+ * the ThemeContext.
+ */
+
+:root,
+[data-theme="light"] {
+  --bg-app:        #FAFAF9;
+  --bg-surface:    #FFFFFF;
+  --bg-subtle:     #F4F4F5;
+  --bg-muted:      #E4E4E7;
+
+  --text-primary:   #18181B;
+  --text-secondary: #52525B;
+  --text-muted:     #A1A1AA;
+  --text-inverse:   #FAFAFA;
+
+  --border:        #E4E4E7;
+  --border-strong: #D4D4D8;
+
+  --accent:        #7C3AED;
+  --accent-hover:  #6D28D9;
+  --accent-muted:  #F3F0FF;
+  --accent-fg:     #FFFFFF;
+
+  --success:       #10B981;
+  --success-muted: #D1FAE5;
+  --warning:       #F59E0B;
+  --warning-muted: #FEF3C7;
+  --danger:        #EF4444;
+  --danger-muted:  #FEE2E2;
+
+  --shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
+  --bg-app:        #0A0A0B;
+  --bg-surface:    #131316;
+  --bg-subtle:     #1C1C21;
+  --bg-muted:      #27272A;
+
+  --text-primary:   #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted:     #71717A;
+  --text-inverse:   #18181B;
+
+  --border:        #27272A;
+  --border-strong: #3F3F46;
+
+  --accent:        #8B5CF6;
+  --accent-hover:  #A78BFA;
+  --accent-muted:  #1E1B2E;
+  --accent-fg:     #FFFFFF;
+
+  --success:       #34D399;
+  --success-muted: #064E3B;
+  --warning:       #FBBF24;
+  --warning-muted: #451A03;
+  --danger:        #F87171;
+  --danger-muted:  #450A0A;
+
+  --shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Smooth theme transitions without animating layout. */
+html {
+  transition: background-color 200ms ease, color 200ms ease;
+}
+html, body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+/* One-shot cell-flash animation for live-feed updates. */
+@keyframes qf-flash {
+  0%   { background-color: var(--accent-muted); }
+  100% { background-color: transparent; }
+}
+.qf-flash {
+  animation: qf-flash 400ms ease-out;
+}

@@ -1,0 +1,79 @@
+<template>
+    <div class="qfp-root">
+        <template if:true={isLoading}>
+            <div class="qfp-loading">
+                <lightning-spinner alternative-text="Loading predictions" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="qfp-error">
+                <strong>Predictions unavailable:</strong> {errorMessage}
+            </div>
+        </template>
+
+        <template if:true={hasData}>
+            <!-- Filter bar -->
+            <div class="qfp-filters">
+                <lightning-combobox label="Stage" value={filterStage}
+                    options={stageOptions} onchange={handleStageChange}
+                    variant="label-hidden"></lightning-combobox>
+                <lightning-input type="number" label="Min amount"
+                    placeholder="Min $ amount" value={filterMinAmount}
+                    onchange={handleMinAmount}
+                    variant="label-hidden"></lightning-input>
+                <lightning-input type="number" label="Min win %"
+                    placeholder="Min win %" value={filterMinWinProb}
+                    max="100" min="0"
+                    onchange={handleMinWinProb}
+                    variant="label-hidden"></lightning-input>
+            </div>
+
+            <!-- Table -->
+            <template if:true={hasRows}>
+                <table class="qfp-table">
+                    <thead>
+                        <tr>
+                            <th><button class="qfp-sort-btn" data-key="name" onclick={sortBy}>Deal</button></th>
+                            <th><button class="qfp-sort-btn" data-key="account_name" onclick={sortBy}>Account</button></th>
+                            <th><button class="qfp-sort-btn" data-key="stage" onclick={sortBy}>Stage</button></th>
+                            <th class="qfp-num"><button class="qfp-sort-btn" data-key="amount" onclick={sortBy}>Amount</button></th>
+                            <th class="qfp-num"><button class="qfp-sort-btn" data-key="win_probability" onclick={sortBy}>Win %</button></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={pagedRows} for:item="r">
+                            <tr key={r.opportunity_id} class="qfp-row"
+                                data-id={r.opportunity_id} onclick={openOpportunity}>
+                                <td class="qfp-deal">{r.name}</td>
+                                <td class="qfp-account">{r.account_name}</td>
+                                <td class="qfp-mono qfp-dim">{r.stage}</td>
+                                <td class="qfp-num qfp-mono">{r.amountDisplay}</td>
+                                <td class="qfp-num">
+                                    <span class={r.bandClass}>{r.percentDisplay}</span>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="qfp-paging">
+                    <span class="qfp-paging-summary">{totalRows} deals · {pageLabel}</span>
+                    <div>
+                        <lightning-button variant="neutral" label="Prev"
+                            onclick={prevPage} disabled={canPrevDisabled}></lightning-button>
+                        <lightning-button variant="neutral" label="Next"
+                            onclick={nextPage} disabled={canNextDisabled}
+                            class="slds-m-left_x-small"></lightning-button>
+                    </div>
+                </div>
+            </template>
+            <template if:false={hasRows}>
+                <div class="qfp-empty">
+                    No deals match these filters.
+                </div>
+            </template>
+        </template>
+    </div>
+</template>

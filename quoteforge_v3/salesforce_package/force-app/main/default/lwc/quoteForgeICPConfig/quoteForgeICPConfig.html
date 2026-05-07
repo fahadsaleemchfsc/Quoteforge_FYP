@@ -1,0 +1,210 @@
+<template>
+    <div class="qfic-root">
+        <template if:true={isLoading}>
+            <div class="qfic-loading">
+                <lightning-spinner alternative-text="Loading ICPs" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="qfic-layout">
+                <!-- ── Left: ICP list ────────────────────── -->
+                <section class="qfic-list-panel">
+                    <header class="qfic-list-header">
+                        <div class="qfic-list-title">ICPs</div>
+                        <lightning-button variant="brand" label="New" onclick={newIcp}
+                            icon-name="utility:add"></lightning-button>
+                    </header>
+                    <template if:false={hasIcps}>
+                        <div class="qfic-empty">
+                            No ICPs yet. Create one to start scoring deals.
+                        </div>
+                    </template>
+                    <template if:true={hasIcps}>
+                        <ul class="qfic-list">
+                            <template for:each={icpListDecorated} for:item="i">
+                                <li key={i.id} class={i.rowClass}>
+                                    <button class="qfic-list-btn" data-id={i.id}
+                                            onclick={handleSelect} type="button">
+                                        <div class="qfic-list-name-row">
+                                            <span class="qfic-list-name">{i.name}</span>
+                                            <template if:true={i.is_active}>
+                                                <span class="qfic-active-badge">active</span>
+                                            </template>
+                                        </div>
+                                        <template if:true={i.description}>
+                                            <div class="qfic-list-desc">{i.description}</div>
+                                        </template>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                </section>
+
+                <!-- ── Right: editor + test panel ──────── -->
+                <div class="qfic-editor">
+                    <section class="qfic-card">
+                        <header class="qfic-card-header">
+                            <div>
+                                <div class="qfic-card-title">{editTitle}</div>
+                                <div class="qfic-card-sub">Hard filters exclude deals outright. Soft signals contribute to the match score.</div>
+                            </div>
+                            <div class="qfic-card-actions">
+                                <template if:true={showActivate}>
+                                    <lightning-button variant="neutral" label="Set active"
+                                        onclick={activate}
+                                        icon-name="utility:check"></lightning-button>
+                                </template>
+                                <template if:true={selectedId}>
+                                    <lightning-button-icon icon-name="utility:delete"
+                                        onclick={remove} alternative-text="Delete"
+                                        variant="bare" size="small"></lightning-button-icon>
+                                </template>
+                            </div>
+                        </header>
+
+                        <div class="qfic-card-body">
+                            <!-- Identity -->
+                            <div class="qfic-section-label">Identity</div>
+                            <lightning-input label="Name" data-key="name"
+                                value={draft.name} onchange={handleFieldChange}></lightning-input>
+                            <lightning-input label="Description" data-key="description"
+                                value={draft.description} onchange={handleFieldChange}></lightning-input>
+
+                            <!-- Hard filters -->
+                            <div class="qfic-section-label">Hard filters (inclusion)</div>
+                            <lightning-input label="Industries (comma-separated)"
+                                data-key="included_industries"
+                                value={includedIndustriesString}
+                                onchange={handleListField}></lightning-input>
+                            <lightning-input label="Regions / countries (comma-separated)"
+                                data-key="included_regions"
+                                value={includedRegionsString}
+                                onchange={handleListField}></lightning-input>
+                            <div class="qfic-grid-2">
+                                <lightning-input type="number" label="Min amount"
+                                    data-key="min_amount" value={draft.min_amount}
+                                    onchange={handleFieldChange}></lightning-input>
+                                <lightning-input type="number" label="Max amount"
+                                    data-key="max_amount" value={draft.max_amount}
+                                    onchange={handleFieldChange}></lightning-input>
+                                <lightning-input type="number" label="Min employees"
+                                    data-key="min_employee_count" value={draft.min_employee_count}
+                                    onchange={handleFieldChange}></lightning-input>
+                                <lightning-input type="number" label="Max employees"
+                                    data-key="max_employee_count" value={draft.max_employee_count}
+                                    onchange={handleFieldChange}></lightning-input>
+                            </div>
+
+                            <!-- Soft signals -->
+                            <div class="qfic-section-label">Soft signals &amp; weights</div>
+                            <lightning-input label="Preferred lead sources (comma-separated)"
+                                data-key="required_lead_sources"
+                                value={leadSourcesString}
+                                onchange={handleListField}></lightning-input>
+                            <lightning-input type="number" step="0.05"
+                                label="Min engagement score (0-1)"
+                                data-key="min_engagement_score"
+                                value={draft.min_engagement_score}
+                                onchange={handleFieldChange}></lightning-input>
+
+                            <div class="qfic-weights">
+                                <div class="qfic-weight-row">
+                                    <label>Industry match</label>
+                                    <input type="range" min="0" max="2" step="0.1"
+                                        data-key="weight_industry_match"
+                                        value={draft.weight_industry_match}
+                                        onchange={handleWeightChange} />
+                                    <span class="qfic-weight-val">{draft.weight_industry_match}</span>
+                                </div>
+                                <div class="qfic-weight-row">
+                                    <label>Region match</label>
+                                    <input type="range" min="0" max="2" step="0.1"
+                                        data-key="weight_region_match"
+                                        value={draft.weight_region_match}
+                                        onchange={handleWeightChange} />
+                                    <span class="qfic-weight-val">{draft.weight_region_match}</span>
+                                </div>
+                                <div class="qfic-weight-row">
+                                    <label>Amount fit</label>
+                                    <input type="range" min="0" max="2" step="0.1"
+                                        data-key="weight_amount_fit"
+                                        value={draft.weight_amount_fit}
+                                        onchange={handleWeightChange} />
+                                    <span class="qfic-weight-val">{draft.weight_amount_fit}</span>
+                                </div>
+                                <div class="qfic-weight-row">
+                                    <label>Engagement</label>
+                                    <input type="range" min="0" max="2" step="0.1"
+                                        data-key="weight_engagement"
+                                        value={draft.weight_engagement}
+                                        onchange={handleWeightChange} />
+                                    <span class="qfic-weight-val">{draft.weight_engagement}</span>
+                                </div>
+                                <div class="qfic-weight-row">
+                                    <label>Lead source</label>
+                                    <input type="range" min="0" max="2" step="0.1"
+                                        data-key="weight_lead_source"
+                                        value={draft.weight_lead_source}
+                                        onchange={handleWeightChange} />
+                                    <span class="qfic-weight-val">{draft.weight_lead_source}</span>
+                                </div>
+                            </div>
+
+                            <div class="qfic-save-row">
+                                <lightning-button variant="brand" label={saveLabel}
+                                    onclick={save} disabled={isSaving}></lightning-button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Test panel -->
+                    <section class="qfic-card">
+                        <header class="qfic-card-header">
+                            <div>
+                                <div class="qfic-card-title">Test this ICP</div>
+                                <div class="qfic-card-sub">
+                                    Paste an Opportunity Id (or use the Golden Opp default) to see the match score + reasons.
+                                </div>
+                            </div>
+                        </header>
+                        <div class="qfic-card-body">
+                            <div class="qfic-test-row">
+                                <lightning-input label="Opportunity Id" variant="label-hidden"
+                                    value={testOppId} onchange={handleTestOppIdChange}
+                                    placeholder="006..."
+                                    class="qfic-test-input"></lightning-input>
+                                <lightning-button variant="brand" label="Score"
+                                    onclick={runTest} disabled={isTesting}></lightning-button>
+                            </div>
+                            <template if:true={testResult}>
+                                <template if:true={testResult.error}>
+                                    <div class="qfic-test-error">{testResult.error}</div>
+                                </template>
+                                <template if:false={testResult.error}>
+                                    <div class="qfic-test-result">
+                                        <div class="qfic-test-headline">
+                                            <span class="qfic-test-pct">{testResult.match_percent}%</span>
+                                            <span class={testResultBandClass}>{testResult.band} fit</span>
+                                            <span class="qfic-test-icp">vs {testResult.icp_name}</span>
+                                        </div>
+                                        <ul class="qfic-test-reasons">
+                                            <template for:each={testResultReasons} for:item="r">
+                                                <li key={r.factor}>
+                                                    <span class="qfic-test-factor">{r.factor}</span>
+                                                    <span class={r.pillClass}>{r.status}</span>
+                                                    <span class="qfic-test-detail">{r.detail}</span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

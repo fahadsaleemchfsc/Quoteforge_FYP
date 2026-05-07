@@ -1,0 +1,224 @@
+/* QuoteForge Settings — operator-tool aesthetic. Dense, clear, monospace
+   for identifiers. */
+
+.qfs-root {
+    padding: 16px;
+    font-size: 13px;
+    color: #1b2031;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 880px;
+}
+
+.qfs-loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px;
+}
+
+.qfs-card {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.qfs-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 14px 10px 14px;
+    border-bottom: 1px solid #F4F4F6;
+    background: #FAFAFB;
+}
+.qfs-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1b2031;
+}
+.qfs-card-sub {
+    font-size: 11.5px;
+    color: #6A6F80;
+    margin-top: 2px;
+}
+.qfs-card-body {
+    padding: 12px 14px 14px 14px;
+}
+
+.qfs-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid #D9DDF2;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 11.5px;
+    color: #3B3977;
+    cursor: pointer;
+    font-family: inherit;
+}
+.qfs-refresh-btn:hover { background: #EEF2FF; }
+
+/* Row + label + value */
+.qfs-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid #F4F4F6;
+}
+.qfs-row:last-of-type { border-bottom: none; }
+.qfs-row-slim { padding: 6px 0; border: none; }
+.qfs-label {
+    font-size: 11.5px;
+    color: #6A6F80;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.qfs-value {
+    font-size: 12.5px;
+    color: #1b2031;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.qfs-mono {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+}
+.qfs-dim { color: #6A6F80; }
+
+/* Status dot */
+.qfs-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block;
+}
+.qfs-dot-ok { background: #059669; box-shadow: 0 0 0 3px #DCFCE7; }
+.qfs-dot-err { background: #DC2626; box-shadow: 0 0 0 3px #FEE2E2; }
+
+/* Inline error banner */
+.qfs-error-inline {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-left: 3px solid #DC2626;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #7F1D1D;
+}
+
+/* Primary + secondary buttons */
+.qfs-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+.qfs-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.qfs-btn-primary {
+    background: #5B21B6;
+    color: #fff;
+}
+.qfs-btn-primary:hover { background: #4C1D95; color: #fff; text-decoration: none; }
+
+/* Checklist */
+.qfs-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.qfs-check-row {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 8px;
+    padding: 8px 0;
+    align-items: flex-start;
+    border-bottom: 1px solid #F4F4F6;
+}
+.qfs-check-row:last-child { border-bottom: none; }
+.qfs-check-icon {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+}
+.qfs-check-pass .qfs-check-icon { color: #059669; }
+.qfs-check-fail .qfs-check-icon { color: #DC2626; }
+.qfs-check-label {
+    font-size: 12.5px;
+    color: #1b2031;
+}
+.qfs-check-hint {
+    font-size: 11.5px;
+    color: #6A6F80;
+    margin-top: 2px;
+}
+
+/* Metrics grid */
+.qfs-grid-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.qfs-metric {
+    background: #FAFAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 3px;
+    padding: 8px 10px;
+}
+.qfs-metric-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6A6F80;
+    margin-bottom: 2px;
+}
+.qfs-metric-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1b2031;
+}
+
+/* Config pointer table */
+.qfs-config-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+.qfs-config-table thead th {
+    text-align: left;
+    font-weight: 600;
+    color: #6A6F80;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    padding: 6px 8px;
+    border-bottom: 1px solid #E5E7EB;
+}
+.qfs-config-table tbody td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #F4F4F6;
+    color: #1b2031;
+}
+
+.qfs-admin-note {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #EEF2FF;
+    border-left: 3px solid #5B21B6;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #3B3977;
+    line-height: 1.5;
+}

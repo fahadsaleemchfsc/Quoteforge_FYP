@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPage>QuoteForge_Mapping</flexiPage>
+    <label>QuoteForge Mapping</label>
+    <motif>Custom67: Package</motif>
+</CustomTab>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+    </targets>
+    <description>QuoteForge Deal Insights — customer-verifiable model accuracy view. Holdout metrics, confusion matrix, accuracy-by-confidence-bucket, recent-deals check, retrain trigger.</description>
+    <masterLabel>QuoteForge Model Accuracy</masterLabel>
+</LightningComponentBundle>

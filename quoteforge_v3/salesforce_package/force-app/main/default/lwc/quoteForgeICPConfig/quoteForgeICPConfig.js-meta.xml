@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+    </targets>
+    <description>QuoteForge ICP Config — inline ideal-customer-profile builder inside Salesforce. Mirrors the admin /icp page. CRUD + activate + test-score any Opp against the active ICP.</description>
+    <masterLabel>QuoteForge ICP Config</masterLabel>
+</LightningComponentBundle>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    QuoteForge MCP Server registration (Headless 360).
+
+    This metadata declares QuoteForge's agent-facing MCP server so Agentforce
+    Studio + any Headless 360 surface can list it alongside native tools.
+
+    The schema in API v66.0 on this org is deliberately lean:
+      - masterLabel   — admin-facing name
+      - description   — explanation of what the server does
+
+    The URL, auth, and active state live in related metadata (McpServerAccess)
+    and the admin-configured Named Credential 'QuoteForge_API'. See README.
+-->
+<McpServerDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>QuoteForge Agentic Commerce Gateway</masterLabel>
+    <description>Agent-facing MCP server for buyer AI negotiation. Exposes get_products, request_quote, and accept_offer tools governed by deterministic guardrails. Callouts flow through the QuoteForge_API Named Credential configured in Setup.</description>
+</McpServerDefinition>

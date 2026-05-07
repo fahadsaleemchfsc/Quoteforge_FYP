@@ -1,0 +1,101 @@
+.qfmm-root { padding: 16px; font-size: 13px; color: #1b2031; max-width: 1000px; }
+.qfmm-loading { display: flex; justify-content: center; padding: 48px; }
+.qfmm-error {
+    padding: 10px 14px; background: #FEF2F2;
+    border-left: 3px solid #DC2626; border-radius: 4px;
+    color: #7F1D1D; font-size: 12px;
+}
+
+.qfmm-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 14px;
+}
+.qfmm-title { font-size: 14px; font-weight: 600; color: #1b2031; }
+.qfmm-sub { font-size: 11.5px; color: #6A6F80; margin-top: 2px; }
+
+.qfmm-section {
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 4px;
+    padding: 14px; margin-bottom: 12px;
+}
+.qfmm-section-title {
+    font-size: 13px; font-weight: 600; color: #1b2031; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.qfmm-live-badge {
+    font-size: 10px; font-weight: 600; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    background: #FEE2E2; color: #991B1B;
+    padding: 2px 8px; border-radius: 2px;
+    animation: qfmm-pulse 1.2s ease-in-out infinite;
+}
+@keyframes qfmm-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.qfmm-kpi-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+}
+.qfmm-kpi {
+    background: #FAFAFB; border: 1px solid #E5E7EB;
+    border-radius: 3px; padding: 10px 12px;
+}
+.qfmm-kpi-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #6A6F80;
+}
+.qfmm-kpi-value {
+    font-size: 18px; font-weight: 700; margin-top: 3px;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    color: #1b2031;
+}
+
+.qfmm-log {
+    background: #0F172A; color: #E2E8F0;
+    padding: 12px; border-radius: 3px;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 11px; line-height: 1.5;
+    max-height: 280px; overflow-y: auto;
+    white-space: pre-wrap; margin: 0;
+}
+.qfmm-log-line { color: #E2E8F0; }
+
+.qfmm-feature-list { display: flex; flex-direction: column; gap: 6px; }
+.qfmm-feature-row {
+    display: grid;
+    grid-template-columns: 260px 1fr 60px;
+    align-items: center; gap: 10px;
+    font-size: 12px;
+}
+.qfmm-feature-name {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 11.5px; color: #3B3977;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.qfmm-feature-bar-wrap {
+    height: 10px; background: #EEF0F3; border-radius: 2px; overflow: hidden;
+}
+.qfmm-feature-bar { height: 100%; background: #5B21B6; border-radius: 2px; }
+.qfmm-feature-pct {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 11px; text-align: right; color: #1b2031;
+}
+
+.qfmm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.qfmm-table thead th {
+    text-align: left; font-weight: 600; color: #6A6F80;
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 6px 8px; border-bottom: 1px solid #E5E7EB; background: #FAFAFB;
+}
+.qfmm-table tbody td { padding: 7px 8px; border-bottom: 1px solid #F4F4F6; }
+.qfmm-num { text-align: right; }
+.qfmm-mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 12px; }
+.qfmm-dim { color: #6A6F80; font-size: 11.5px; }
+
+.qfmm-badge {
+    display: inline-block; padding: 2px 8px; font-size: 10.5px;
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 2px; font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}
+.qfmm-badge-active { background: #DCFCE7; color: #14532D; }
+.qfmm-badge-archived { background: #F4F4F6; color: #52525B; }

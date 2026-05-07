@@ -1,0 +1,116 @@
+<template>
+    <div class="qfmm-root">
+        <template if:true={isLoading}>
+            <div class="qfmm-loading">
+                <lightning-spinner alternative-text="Loading models" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="qfmm-error">
+                <strong>Model Management unavailable:</strong> {errorMessage}
+            </div>
+        </template>
+
+        <template if:true={hasData}>
+            <!-- Header + retrain trigger -->
+            <div class="qfmm-header">
+                <div>
+                    <div class="qfmm-title">Model Management</div>
+                    <div class="qfmm-sub">Active model: {activeVersionDisplay} · {tierDisplay} tier · trained {activeTrained}</div>
+                </div>
+                <lightning-button variant="brand" label={retrainLabel}
+                    icon-name="utility:refresh"
+                    onclick={handleRetrain} disabled={retrainDisabled}></lightning-button>
+            </div>
+
+            <!-- Active model KPIs -->
+            <section class="qfmm-section">
+                <div class="qfmm-kpi-grid">
+                    <div class="qfmm-kpi">
+                        <div class="qfmm-kpi-label">Accuracy</div>
+                        <div class="qfmm-kpi-value">{activeAccuracy}</div>
+                    </div>
+                    <div class="qfmm-kpi">
+                        <div class="qfmm-kpi-label">ROC AUC</div>
+                        <div class="qfmm-kpi-value">{activeAUC}</div>
+                    </div>
+                    <div class="qfmm-kpi">
+                        <div class="qfmm-kpi-label">Precision</div>
+                        <div class="qfmm-kpi-value">{activePrecision}</div>
+                    </div>
+                    <div class="qfmm-kpi">
+                        <div class="qfmm-kpi-label">Recall</div>
+                        <div class="qfmm-kpi-value">{activeRecall}</div>
+                    </div>
+                    <div class="qfmm-kpi">
+                        <div class="qfmm-kpi-label">Training rows</div>
+                        <div class="qfmm-kpi-value">{activeTrainingRows}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live training log (visible during/after retrain) -->
+            <template if:true={hasLogLines}>
+                <section class="qfmm-section">
+                    <div class="qfmm-section-title">
+                        Training log
+                        <template if:true={isJobRunning}>
+                            <span class="qfmm-live-badge">LIVE · polling every 2s</span>
+                        </template>
+                    </div>
+                    <pre class="qfmm-log">
+                        <template for:each={logLines} for:item="line">
+                            <div key={line} class="qfmm-log-line">{line}</div>
+                        </template>
+                    </pre>
+                </section>
+            </template>
+
+            <!-- Feature importance -->
+            <section class="qfmm-section">
+                <div class="qfmm-section-title">Top 10 features driving predictions</div>
+                <div class="qfmm-feature-list">
+                    <template for:each={topFeatures} for:item="f">
+                        <div key={f.name} class="qfmm-feature-row">
+                            <span class="qfmm-feature-name">{f.name}</span>
+                            <div class="qfmm-feature-bar-wrap">
+                                <div class="qfmm-feature-bar" style={f.barStyle}></div>
+                            </div>
+                            <span class="qfmm-feature-pct">{f.percentDisplay}</span>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <!-- History -->
+            <section class="qfmm-section">
+                <div class="qfmm-section-title">Version history</div>
+                <table class="qfmm-table">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Trained</th>
+                            <th class="qfmm-num">Rows</th>
+                            <th class="qfmm-num">Accuracy</th>
+                            <th class="qfmm-num">AUC</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={historyRows} for:item="m">
+                            <tr key={m.id}>
+                                <td class="qfmm-mono">{m.versionDisplay}</td>
+                                <td class="qfmm-dim">{m.trainedDisplay}</td>
+                                <td class="qfmm-num qfmm-mono">{m.rowsDisplay}</td>
+                                <td class="qfmm-num qfmm-mono">{m.accuracyDisplay}</td>
+                                <td class="qfmm-num qfmm-mono">{m.aucDisplay}</td>
+                                <td><span class={m.badgeClass}>{m.statusBadge}</span></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </section>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.parcel-cache/
+*.log
+npm-debug.log*
+
+# Salesforce / SFDX
+.sfdx/
+.sf/
+.localdevserver/
+
+# Secrets & local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Databases & ML artifacts
+*.db
+*.sqlite
+*.sqlite3
+*.pkl
+quoteforge_v3/backend/storage/insights_models/
+
+# AI tool artifacts
+.claude/
+CLAUDE.md
+.anthropic/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Large/derived
+*.zip
+*.tar.gz

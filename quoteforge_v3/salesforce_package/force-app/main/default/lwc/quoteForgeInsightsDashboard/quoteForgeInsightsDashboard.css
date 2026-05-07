@@ -1,0 +1,76 @@
+/* Dashboard — dense pipeline view, matches QuoteForge operator aesthetic. */
+.qfid-root { padding: 16px; font-size: 13px; color: #1b2031; }
+
+.qfid-loading { display: flex; justify-content: center; padding: 48px; }
+.qfid-error {
+    padding: 12px 14px; background: #FEF2F2;
+    border: 1px solid #FECACA; border-left: 3px solid #DC2626;
+    border-radius: 4px;
+}
+.qfid-error-title { font-weight: 600; color: #991B1B; font-size: 12.5px; }
+.qfid-error-body  { color: #7F1D1D; font-size: 12px; margin-top: 3px; }
+
+.qfid-kpi-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; margin-bottom: 14px;
+}
+.qfid-kpi {
+    background: #fff; border: 1px solid #E5E7EB;
+    border-radius: 4px; padding: 12px 14px;
+}
+.qfid-kpi-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #6A6F80;
+}
+.qfid-kpi-value {
+    font-size: 22px; font-weight: 700; color: #1b2031; margin-top: 3px;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}
+
+.qfid-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+.qfid-card {
+    background: #fff; border: 1px solid #E5E7EB;
+    border-radius: 4px; overflow: hidden;
+}
+.qfid-card-header {
+    padding: 10px 14px; border-bottom: 1px solid #F4F4F6;
+    background: #FAFAFB;
+}
+.qfid-card-title { font-size: 13px; font-weight: 600; color: #1b2031; }
+.qfid-card-sub { font-size: 11px; color: #6A6F80; margin-top: 2px; }
+
+.qfid-list { list-style: none; margin: 0; padding: 4px 0; }
+.qfid-list > li + li { border-top: 1px solid #F4F4F6; }
+
+.qfid-row {
+    display: grid;
+    grid-template-columns: 10px 52px 1fr auto auto;
+    align-items: center; gap: 10px;
+    width: 100%; padding: 8px 14px;
+    background: transparent; border: none; text-align: left;
+    cursor: pointer; font: inherit; color: inherit;
+}
+.qfid-row:hover { background: #F8FAFF; }
+
+.qfid-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.qfid-dot-high { background: #059669; }
+.qfid-dot-medium { background: #D97706; }
+.qfid-dot-low { background: #DC2626; }
+
+.qfid-pct {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-weight: 700; font-size: 13px; color: #1b2031;
+}
+.qfid-name {
+    font-weight: 600; font-size: 12.5px; color: #1b2031;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.qfid-account { font-size: 11.5px; color: #6A6F80; }
+.qfid-amount {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 12px; color: #3B3977;
+}
+.qfid-empty { padding: 16px; color: #6A6F80; font-size: 11.5px; text-align: center; }

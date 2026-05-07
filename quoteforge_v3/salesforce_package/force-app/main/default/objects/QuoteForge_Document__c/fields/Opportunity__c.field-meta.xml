@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Opportunity__c</fullName>
+    <label>Opportunity</label>
+    <type>Lookup</type>
+    <referenceTo>Opportunity</referenceTo>
+    <relationshipName>QuoteForge_Documents</relationshipName>
+    <relationshipLabel>QuoteForge Documents</relationshipLabel>
+    <description>The Opportunity this document was generated from</description>
+</CustomField>

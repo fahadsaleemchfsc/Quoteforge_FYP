@@ -1,0 +1,20 @@
+[
+  {
+    "title": "SOC 2 Type II Requirements",
+    "category": "compliance",
+    "region": "US",
+    "content": "SOC 2 Type II Compliance Requirements for Service Organizations:\n\nSecurity: Information and systems are protected against unauthorized access. Controls include firewalls, intrusion detection, multi-factor authentication, and encryption (AES-256 at rest, TLS 1.3 in transit).\n\nAvailability: Systems are available for operation and use as committed. Includes disaster recovery, business continuity planning, and 99.9% uptime SLAs.\n\nProcessing Integrity: System processing is complete, valid, accurate, timely, and authorized. Quality assurance and monitoring controls are in place.\n\nConfidentiality: Information designated as confidential is protected as committed. Data classification, access controls, and secure disposal procedures implemented.\n\nPrivacy: Personal information is collected, used, retained, disclosed, and disposed in conformity with the entity's privacy notice and AICPA privacy criteria."
+  },
+  {
+    "title": "GDPR Data Protection Requirements",
+    "category": "compliance",
+    "region": "EU",
+    "content": "GDPR Compliance Framework (Regulation EU 2016/679):\n\nLawfulness: Data processing must have a legal basis (consent, contract, legitimate interest, legal obligation, vital interest, or public task).\n\nData Minimization: Only collect and process data that is strictly necessary for the specified purpose. Avoid excessive data collection.\n\nPurpose Limitation: Personal data must be collected for specified, explicit, and legitimate purposes and not further processed incompatibly.\n\nStorage Limitation: Personal data should only be kept for as long as necessary to fulfill its purpose. Implement data retention policies.\n\nData Subject Rights: Right to access, rectification, erasure (right to be forgotten), data portability, restriction of processing, and objection to processing.\n\nData Processing Agreement (DPA): Required between data controllers and processors. Must specify processing details, security measures, and sub-processor policies.\n\nBreach Notification: Data breaches must be reported to supervisory authority within 72 hours. Affected individuals must be notified without undue delay."
+  },
+  {
+    "title": "PPRA Pakistan Procurement Rules",
+    "category": "compliance",
+    "region": "PK",
+    "content": "PPRA Rules 2004 \u2014 Public Procurement Regulatory Authority of Pakistan:\n\nTransparency: All procurement processes must be transparent and documented. Bid evaluations must follow predefined, published criteria.\n\nOpen Competition: Procurement above PKR 100,000 requires competitive bidding. Single-source procurement only permitted under specific exemptions.\n\nEconomy: Procuring agencies must ensure value for money. Price reasonableness must be documented and justified.\n\nRule of Consistency: Rules of the procurement process must be applied consistently to all bidders. No discrimination or preferential treatment.\n\nTax Compliance: All vendors must be registered taxpayers. GST at 17% is applicable on goods and services. Withholding tax provisions apply as per FBR rules.\n\nDocumentation: Complete procurement record must be maintained for audit purposes. Includes bid documents, evaluation reports, contract awards, and performance records.\n\nGrievance Mechanism: Bidders have the right to file complaints with PPRA. Grievances must be addressed within the prescribed timeline."
+  }
+]

@@ -1,0 +1,207 @@
+/* QuoteForge Prompt Builder — operator-tool aesthetic.
+   Dense information, monospace for numbers/SKUs, no decorative gradients. */
+
+.qf-root {
+    font-size: 13px;
+    color: #1b2031;
+}
+
+/* ─── Context chips ─────────────────────────────────────────── */
+.qf-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.qf-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #EEF2FF;
+    color: #3B3977;
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid #D9DDF2;
+}
+.qf-chip-muted {
+    background: #F4F4F6;
+    color: #6A6F80;
+    border-color: #E5E7EB;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}
+
+/* ─── Prompt textarea + example chips ─────────────────────── */
+.qf-textarea {
+    font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+}
+.qf-examples {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.qf-examples-label {
+    font-size: 11.5px;
+    color: #6A6F80;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.qf-chip-btn {
+    font-size: 11.5px;
+    background: #fff;
+    color: #3B3977;
+    border: 1px solid #D9DDF2;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.qf-chip-btn:hover {
+    background: #EEF2FF;
+}
+
+/* ─── Loading / error / verdict panels ────────────────────── */
+.qf-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: #F4F4F6;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+}
+.qf-loading-text { font-size: 12.5px; color: #3B3977; }
+
+.qf-error {
+    padding: 12px 14px;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-left: 3px solid #DC2626;
+    border-radius: 4px;
+}
+.qf-error-title { font-weight: 600; color: #991B1B; font-size: 12.5px; }
+.qf-error-body  { color: #7F1D1D; font-size: 12px; margin-top: 3px; }
+
+.qf-guardrail {
+    padding: 12px 14px;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+.qf-guardrail-block {
+    background: #FFF1F2;
+    border: 1px solid #FECDD3;
+    border-left: 3px solid #E11D48;
+}
+.qf-guardrail-title { font-weight: 600; color: #9F1239; font-size: 13px; }
+.qf-guardrail-reason { color: #7F1D1D; font-size: 12.5px; margin-top: 4px; }
+
+.qf-verdict-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.qf-badge {
+    font-size: 10.5px;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+.qf-badge-pass   { background: #DCFCE7; color: #14532D; }
+.qf-badge-review { background: #FEF3C7; color: #713F12; }
+.qf-parse-hint {
+    font-size: 11px;
+    color: #6A6F80;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}
+
+/* ─── Table ────────────────────────────────────────────────── */
+.qf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    margin-top: 4px;
+}
+.qf-table thead th {
+    text-align: left;
+    font-weight: 600;
+    color: #6A6F80;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    padding: 6px 8px;
+    border-bottom: 1px solid #E5E7EB;
+}
+.qf-table tbody td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #F4F4F6;
+    color: #1b2031;
+}
+.qf-num { text-align: right; }
+.qf-mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 12px; }
+.qf-tiny { font-size: 11px; }
+.qf-neg { color: #059669; }
+
+/* ─── Totals block ───────────────────────────────────────── */
+.qf-totals {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #FAFAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    font-size: 12.5px;
+}
+.qf-totals > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+.qf-totals .qf-total {
+    border-top: 1px solid #E5E7EB;
+    margin-top: 4px;
+    padding-top: 7px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* ─── Meta & actions ─────────────────────────────────────── */
+.qf-meta {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 4px;
+    column-gap: 16px;
+    font-size: 12px;
+    color: #3B3977;
+}
+.qf-meta > div { display: flex; justify-content: space-between; }
+.qf-meta span:first-child { color: #6A6F80; }
+
+.qf-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* ─── Success + pending ──────────────────────────────────── */
+.qf-success {
+    padding: 12px 14px;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-left: 3px solid #059669;
+    border-radius: 4px;
+}
+.qf-success-title { font-weight: 600; color: #064E3B; font-size: 13px; }
+.qf-success-body  { color: #065F46; font-size: 12.5px; margin-top: 3px; }
+
+.qf-warning {
+    padding: 12px 14px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-left: 3px solid #D97706;
+    border-radius: 4px;
+}
+.qf-warning-title { font-weight: 600; color: #78350F; font-size: 13px; }
+.qf-warning-body  { color: #78350F; font-size: 12.5px; margin-top: 3px; }

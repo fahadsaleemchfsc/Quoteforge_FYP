@@ -1,0 +1,64 @@
+.qfp-root { padding: 16px; font-size: 13px; color: #1b2031; }
+
+.qfp-loading { display: flex; justify-content: center; padding: 48px; }
+.qfp-error {
+    padding: 10px 14px; background: #FEF2F2;
+    border-left: 3px solid #DC2626; border-radius: 4px;
+    color: #7F1D1D; font-size: 12px;
+}
+
+.qfp-filters {
+    display: grid; grid-template-columns: 200px 160px 160px;
+    gap: 10px; margin-bottom: 12px;
+}
+
+.qfp-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 4px;
+}
+.qfp-table thead th {
+    text-align: left; font-weight: 600; color: #6A6F80;
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 8px 10px; border-bottom: 1px solid #E5E7EB;
+    background: #FAFAFB;
+}
+.qfp-table tbody td { padding: 8px 10px; border-bottom: 1px solid #F4F4F6; }
+
+.qfp-sort-btn {
+    background: transparent; border: none; padding: 0;
+    font: inherit; cursor: pointer;
+    text-transform: uppercase; font-size: 10.5px;
+    letter-spacing: 0.05em; font-weight: 600; color: #6A6F80;
+}
+.qfp-sort-btn:hover { color: #5B21B6; }
+
+.qfp-row { cursor: pointer; }
+.qfp-row:hover { background: #F8FAFF; }
+
+.qfp-deal { font-weight: 600; color: #1b2031; }
+.qfp-account { color: #52525B; }
+.qfp-num { text-align: right; }
+.qfp-mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-size: 12px; }
+.qfp-dim { color: #6A6F80; }
+
+.qfp-band {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 3px;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-weight: 700; font-size: 12px;
+}
+.qfp-band-high { background: #DCFCE7; color: #14532D; }
+.qfp-band-medium { background: #FEF3C7; color: #713F12; }
+.qfp-band-low { background: #FEE2E2; color: #7F1D1D; }
+
+.qfp-paging {
+    margin-top: 10px; display: flex; justify-content: space-between;
+    align-items: center; font-size: 12px; color: #6A6F80;
+}
+.qfp-paging-summary { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; }
+
+.qfp-empty {
+    padding: 30px; text-align: center; color: #6A6F80;
+    font-size: 12.5px; background: #FAFAFB; border: 1px solid #E5E7EB;
+    border-radius: 4px;
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Enterprise Pricing Best Practices",
+    "category": "pricing",
+    "region": "global",
+    "content": "Enterprise Software Pricing Guidelines:\n\nVolume Discounts: Standard tiers are 5% for 50+ units, 10% for 100+ units, 15% for enterprise agreements above $50,000, and 20% for multi-year commitments.\n\nPayment Terms: Standard is Net 30. Enterprise clients may negotiate Net 45 or Net 60. Early payment discount of 2% for payment within 10 days (2/10 Net 30).\n\nSubscription Pricing: Annual billing provides 15-20% savings over monthly billing. Multi-year contracts (3-5 years) can include price lock guarantees.\n\nImplementation Fees: Typically 15-25% of total license value. Includes setup, configuration, data migration, and initial training. Should be quoted separately.\n\nSupport Tiers: Basic (business hours, email) included. Premium (24/7, phone) is 15-20% of annual license fee. Enterprise (dedicated CSM) is 20-25%."
+  },
+  {
+    "title": "Regional Tax Rates",
+    "category": "pricing",
+    "region": "global",
+    "content": "Applicable Tax Rates by Region:\n\nUnited States: Sales tax varies by state (0-10.25%). No federal sales tax. Software-as-a-Service taxability varies by state. Average effective rate: 7.5%.\n\nEuropean Union: VAT rates range from 17% (Luxembourg) to 27% (Hungary). Standard rates: Germany 19%, France 20%, UK 20%, Netherlands 21%, Italy 22%.\n\nPakistan: General Sales Tax (GST) is 17% on goods and services. Withholding tax provisions apply per FBR Income Tax Ordinance 2001. IT services may qualify for reduced rates under IT/ITeS exemptions.\n\nCanada: GST 5% federal + provincial sales tax varies (0-10%). HST in some provinces.\n\nNote: All tax calculations should be validated against current legislation. QuoteForge applies configured tax rules; final liability determined by tax advisors."
+  }
+]

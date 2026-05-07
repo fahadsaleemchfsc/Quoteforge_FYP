@@ -1,0 +1,120 @@
+<template>
+    <!-- QuoteForge Button on Opportunity Page -->
+    <lightning-card title="QuoteForge" icon-name="standard:document">
+
+        <!-- Status Banner -->
+        <template if:true={isConnected}>
+            <div class="slds-box slds-theme_success slds-m-around_small">
+                <p class="slds-text-body_small">
+                    <lightning-icon icon-name="utility:check" size="x-small" variant="inverse"></lightning-icon>
+                    &nbsp; Connected to QuoteForge
+                </p>
+            </div>
+        </template>
+
+        <!-- Generate Button -->
+        <div class="slds-p-around_medium">
+            <template if:false={isGenerating}>
+                <div class="slds-grid slds-gutters">
+                    <!-- Output Format -->
+                    <div class="slds-col slds-size_1-of-3">
+                        <lightning-combobox
+                            name="format"
+                            label="Output Format"
+                            value={outputFormat}
+                            options={formatOptions}
+                            onchange={handleFormatChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_2-of-3 slds-grid slds-grid_vertical-align-end">
+                        <lightning-button
+                            variant="brand"
+                            label="Generate Proposal"
+                            icon-name="utility:magicwand"
+                            onclick={handleGenerate}
+                            class="slds-m-left_medium"
+                        ></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Loading State -->
+            <template if:true={isGenerating}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <lightning-spinner alternative-text="Generating..." size="medium"></lightning-spinner>
+                    <p class="slds-m-left_medium slds-text-body_regular">{statusMessage}</p>
+                </div>
+            </template>
+
+            <!-- Success State -->
+            <template if:true={isComplete}>
+                <div class="slds-box slds-theme_success slds-m-top_medium">
+                    <div class="slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <p class="slds-text-heading_small">
+                                <lightning-icon icon-name="utility:success" variant="inverse" size="small"></lightning-icon>
+                                &nbsp; Proposal Generated!
+                            </p>
+                            <p class="slds-text-body_small slds-m-top_xx-small">
+                                Document ID: {generatedDocId} | Generated in {generationTime}s
+                            </p>
+                        </div>
+                        <div class="slds-col slds-shrink-none">
+                            <lightning-button
+                                variant="neutral"
+                                label="Download"
+                                icon-name="utility:download"
+                                onclick={handleDownload}
+                                class="slds-m-right_small"
+                            ></lightning-button>
+                            <lightning-button
+                                variant="neutral"
+                                label="Send to Client"
+                                icon-name="utility:email"
+                                onclick={handleSend}
+                            ></lightning-button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Error State -->
+            <template if:true={hasError}>
+                <div class="slds-box slds-theme_error slds-m-top_medium">
+                    <p class="slds-text-body_small">{errorMessage}</p>
+                </div>
+            </template>
+
+            <!-- Pricing Preview (shown after generation) -->
+            <template if:true={pricingData}>
+                <div class="slds-box slds-m-top_medium">
+                    <p class="slds-text-heading_small slds-m-bottom_small">Pricing Breakdown</p>
+                    <div class="slds-grid slds-gutters slds-text-body_small">
+                        <div class="slds-col">Subtotal:</div>
+                        <div class="slds-col slds-text-align_right">${pricingData.subtotal}</div>
+                    </div>
+                    <template if:true={pricingData.discount}>
+                        <div class="slds-grid slds-gutters slds-text-body_small slds-text-color_success">
+                            <div class="slds-col">Discount:</div>
+                            <div class="slds-col slds-text-align_right">-${pricingData.discount}</div>
+                        </div>
+                    </template>
+                    <div class="slds-grid slds-gutters slds-text-body_small">
+                        <div class="slds-col">Tax:</div>
+                        <div class="slds-col slds-text-align_right">${pricingData.tax}</div>
+                    </div>
+                    <hr/>
+                    <div class="slds-grid slds-gutters slds-text-heading_small">
+                        <div class="slds-col"><strong>Total:</strong></div>
+                        <div class="slds-col slds-text-align_right"><strong>${pricingData.total}</strong></div>
+                    </div>
+                    <template if:true={pricingData.compliance_framework}>
+                        <p class="slds-text-body_small slds-m-top_small slds-text-color_weak">
+                            Compliance: {pricingData.compliance_framework}
+                        </p>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
