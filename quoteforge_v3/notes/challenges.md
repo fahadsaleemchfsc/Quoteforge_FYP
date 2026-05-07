@@ -80,5 +80,23 @@ cross-tenant leak (Phase E).
 - `document_logs` and `audit_logs` have no `tenant_id` columns either —
   the same pattern of latent isolation gap. Identified during Phase 6 test
   authoring; left for post-defense.
+- **`oauth_callback` does not parse the `reauth:<id>` state prefix.**
+  `reauthenticate_connection` (`app/routers/crm.py:737`) sets
+  `state=f"reauth:{conn_id}"`, but the callback at `:201` does
+  `environment = state` unconditionally — so the literal string
+  `"reauth:4"` gets passed to `exchange_code_for_tokens` as the
+  environment (which expects `production` or `sandbox`) and to
+  `store_salesforce_tokens`, which would create a new connection row
+  rather than updating the existing `conn_id` in place. Consequence:
+  the API-driven reauth path is currently broken; we use
+  `scripts/provision_sf_connection.py` instead as the dev workaround.
+  Until this is fixed, `refresh_token` stays empty in dev (the script
+  cannot extract it from the `sf` CLI keychain) and the connection
+  goes `reauth_required` every 2-4 hours when the access token expires
+  — re-run the script to restore.
+  Post-defense: parse `state` with a `reauth:` prefix branch in
+  `oauth_callback`, look up the existing `conn_id`, update tokens in
+  place, and route the redirect environment from the persisted row
+  rather than from `state`.
 
 ---

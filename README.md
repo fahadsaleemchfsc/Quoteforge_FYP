@@ -128,10 +128,27 @@ Trained against two distinct datasets to validate the pipeline under different c
 
 Two issues found during v1 review are being addressed for v2:
 
-1. **Row cap removed.** v1 trained on the first 5,000 closed Opps due to a hardcoded `LIMIT 5000` in the training fetcher. v2 removes the cap; the live customer org has ~17,378 closed Opps available, so v2 trains on ~3.5× the data.
+1. **Row cap removed.** v1 trained on the first 5,000 closed Opps due to a hardcoded `LIMIT 5000` in the training fetcher. v2 removes the cap so the trainer pulls the customer's full closed-deal dataset (thousands of additional closed Opportunities) instead of a head-of-list slice.
 2. **Activity enrichment for training.** v1's training fetcher didn't populate `_contact_activities` / `_account_activities`, so three engagement-derived features (`activity_count`, `contact_activity_count`, `account_activity_count_365d`) were zero-variance during training and contributed no learned signal. v2 adds bulk-chunked SOQL queries (~5 calls per chunk of 500 Opps) to populate these features at training time, matching the prediction-time feature distribution.
 
 Expected v2 lift: AUC into the **0.83–0.87** range, with recall improvement from the activity features.
+
+## Known Limitations / Data Quality
+
+Honest documentation of what v1 does and does not handle well, observed during live testing against the partner UAT sandbox:
+
+**Training data is the source of truth, not the live pipeline.** The v1 model was trained on 5,000 closed Opportunities sampled from the customer org. Those rows have realistic deal-cycle ages (created → closed within reasonable B2B timelines). The model learned, correctly, that deals which sit open for *much* longer than the cycle distribution it saw in training are unlikely to win.
+
+**Stale open Opportunities cluster low.** The current open Opps in the partner UAT sandbox have CloseDates roughly a year past today's date — they are zombie sandbox records left behind after manual testing rather than active deals. When the LWC predicts on these, the model's `age_days` feature (today − CreatedDate) lands far above anything in the training distribution, so predictions cluster heavily in the 1–10% range. **This is the model behaving correctly:** it's flagging that these records do not look like the closed deals it learned from. It is *not* a sign that the LightGBM classifier is broken.
+
+The visible consequence in the LWC: across the 20 most-recent Opps in the UAT sandbox, 19 land below 20% win probability and only 1 sits above 60%. The "moderate confidence" 20–60% band is sparsely populated. On a freshly-maintained production Opportunity pipeline (CloseDates within the next 30–90 days, active engagement), prediction distribution is expected to be smoother.
+
+**v2 will surface this as a customer-facing signal.** The next iteration adds a data-hygiene report alongside each prediction — open-Opp staleness (days past CloseDate), missing-contact rate, no-recent-activity rate — so reps and admins can see whether a low prediction reflects deal weakness or pipeline staleness, and act accordingly.
+
+**Other v1 caveats:**
+- `age_days` is computed as `today − CreatedDate` (`features.py:203`). Five additional features fall back to `age_days` when their specific signal is missing (e.g. no stage-change date, no activities), so old open deals see a multiplied effect. v2 candidates: cap age at the training-set 95th percentile, or switch to age-at-current-stage.
+- Each prediction triggers ~9 sequential SOQL round-trips against the customer org (1 main + 6 enrichment + 2 activity batches), so latency on a remote sandbox can reach 5–10 seconds. Batching enrichment queries via `asyncio.gather` and dropping the redundant ICP-refresh fetch on cache hits are easy wins for v2.
+- The OAuth `reauth` flow has a known state-handling bug (see `notes/challenges.md`); dev environments use the `scripts/provision_sf_connection.py` bootstrap as a workaround. Refresh tokens are not stored in this path, so dev connections need to be re-bootstrapped every 2–4 hours.
 
 ## Multi-Tenant Isolation
 
