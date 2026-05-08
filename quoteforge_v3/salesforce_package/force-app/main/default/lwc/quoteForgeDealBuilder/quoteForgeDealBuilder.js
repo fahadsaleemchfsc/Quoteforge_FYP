@@ -18,7 +18,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import parsePrompt from '@salesforce/apex/QuoteForgeController.parsePrompt';
 import createDealFromPrompt from '@salesforce/apex/QuoteForgeController.createDealFromPrompt';
-import getDownloadUrl from '@salesforce/apex/QuoteForgeController.getDownloadUrl';
+import downloadDocument from '@salesforce/apex/QuoteForgeController.downloadDocument';
 
 export default class QuoteForgeDealBuilder extends NavigationMixin(LightningElement) {
     @api recordId;  // Contact ID (when placed on Contact page)
@@ -170,12 +170,31 @@ export default class QuoteForgeDealBuilder extends NavigationMixin(LightningElem
     async handleDownload() {
         if (!this.generatedDocId) return;
         try {
-            const url = await getDownloadUrl({ docId: this.generatedDocId });
-            window.open(url, '_blank');
+            const resultJson = await downloadDocument({ docId: this.generatedDocId });
+            const result = JSON.parse(resultJson);
+            if (result.error) throw new Error(result.error);
+
+            // Decode base64 PDF/DOCX bytes into a Blob and trigger a browser
+            // save via a synthetic <a download> click. window.open against the
+            // backend doesn't work because (a) callout: URLs aren't browser-
+            // resolvable and (b) the endpoint requires JWT auth the browser
+            // tab doesn't carry.
+            const binary = atob(result.content_base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const blob = new Blob([bytes], { type: result.content_type || 'application/pdf' });
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = result.filename || `${this.generatedDocId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Download Error',
-                message: 'Failed to get download link',
+                message: error.message || 'Failed to download document',
                 variant: 'error',
             }));
         }
