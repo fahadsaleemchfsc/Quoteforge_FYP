@@ -122,13 +122,13 @@ Trained against two distinct datasets to validate the pipeline under different c
 | `default` (synthetic benchmark) | v12 | 5,000 | 2,457 / 2,543 | 49 / 51 | 0.717 | 0.736 | 0.660 | 0.802 |
 | `client-sandbox` (real org) | v1 | 5,000 | 1,057 / 3,943 | 21 / 79 | 0.772 | 0.473 | 0.697 | **0.818** |
 
-**Reading the metrics:** Accuracy looks higher on the real-org model than the synthetic one, but that's class-imbalance illusion — a model that always predicts "lost" would score 0.789 on the real-org data just from the base rate. The signal is in the **AUC of 0.82 and recall of 0.70** — the model is catching ~70% of actual wins despite being trained on data where wins are the minority class. The lower precision (0.47) is a deliberate trade: in B2B sales, missing a winnable deal costs more than reviewing a marginal one, so the model is tuned to favor recall.
+**Reading the metrics:** v1's training sample of 5,000 closed Opps was drawn from a customer org with 15,686 total closed Opportunities (verified via direct SOQL count) — the LIMIT 5000 cap meant only ~32% of the available labeled data was used. Class balance in the full org is 17/83 (2,710 won / 12,976 lost), even more skewed than the 21/79 sample seen at training time. Accuracy looks higher on the real-org model than the synthetic one, but that's class-imbalance illusion — a model that always predicts "lost" would score 0.789 on the real-org data just from the base rate. The signal is in the **AUC of 0.82 and recall of 0.70** — the model is catching ~70% of actual wins despite being trained on data where wins are the minority class. The lower precision (0.47) is a deliberate trade: in B2B sales, missing a winnable deal costs more than reviewing a marginal one, so the model is tuned to favor recall.
 
 ### v2 (in progress)
 
 Two issues found during v1 review are being addressed for v2:
 
-1. **Row cap removed.** v1 trained on the first 5,000 closed Opps due to a hardcoded `LIMIT 5000` in the training fetcher. v2 removes the cap so the trainer pulls the customer's full closed-deal dataset (thousands of additional closed Opportunities) instead of a head-of-list slice.
+1. **Row cap removed.** v1 trained on the first 5,000 closed Opps due to a hardcoded `LIMIT 5000` in the training fetcher — about 32% of the 15,686 closed Opps available in the partner org. v2 removes the cap so the trainer uses the full closed-deal dataset (~3.1× more training rows) instead of a head-of-list slice.
 2. **Activity enrichment for training.** v1's training fetcher didn't populate `_contact_activities` / `_account_activities`, so three engagement-derived features (`activity_count`, `contact_activity_count`, `account_activity_count_365d`) were zero-variance during training and contributed no learned signal. v2 adds bulk-chunked SOQL queries (~5 calls per chunk of 500 Opps) to populate these features at training time, matching the prediction-time feature distribution.
 
 Expected v2 lift: AUC into the **0.83–0.87** range, with recall improvement from the activity features.
@@ -148,7 +148,7 @@ The visible consequence in the LWC: across the 20 most-recent Opps in the UAT sa
 **Other v1 caveats:**
 - `age_days` is computed as `today − CreatedDate` (`features.py:203`). Five additional features fall back to `age_days` when their specific signal is missing (e.g. no stage-change date, no activities), so old open deals see a multiplied effect. v2 candidates: cap age at the training-set 95th percentile, or switch to age-at-current-stage.
 - Each prediction triggers ~9 sequential SOQL round-trips against the customer org (1 main + 6 enrichment + 2 activity batches), so latency on a remote sandbox can reach 5–10 seconds. Batching enrichment queries via `asyncio.gather` and dropping the redundant ICP-refresh fetch on cache hits are easy wins for v2.
-- The OAuth `reauth` flow has a known state-handling bug (see `notes/challenges.md`); dev environments use the `scripts/provision_sf_connection.py` bootstrap as a workaround. Refresh tokens are not stored in this path, so dev connections need to be re-bootstrapped every 2–4 hours.
+- The OAuth `reauth` flow has a known state-handling bug (see `notes/challenges.md`) where re-authenticating an existing connection creates a new connection row instead of updating in-place. Dev environments use the `scripts/provision_sf_connection.py` bootstrap as a workaround. Refresh tokens are not stored in this path, so dev connections need to be re-bootstrapped every 2–4 hours. Production fix is roadmapped.
 
 ## Multi-Tenant Isolation
 
@@ -257,8 +257,11 @@ final_year_project/
 | ✅ | LWC: proposal generator |
 | ✅ | LWC: Deal Insights with confidence intervals |
 | ✅ | Admin portal: training wizard |
-| ✅ | v1 model on real customer data (AUC 0.818) |
+| ✅ | v1 model on real customer data — AUC 0.818, recall 0.70, trained on 5,000 of 15,686 available closed Opps |
 | 🔄 | v2: full dataset + activity feature enrichment |
+| ✅ | LWC: proposal generator wired end-to-end (SF lookup → AI generation → Salesforce write-back) |
+| ✅ | tenant-resolution fix across 4 quote-generation call sites |
+| 🔄 | OAuth callback reauth state handling (replace dev bootstrap workaround) |
 | 📋 | v3: time-aware activity windowing (avoid post-close leakage) |
 | 📋 | Drift detection: alert when prediction distribution shifts |
 | 📋 | Per-feature SHAP values surfaced in the LWC |
