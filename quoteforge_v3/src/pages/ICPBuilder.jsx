@@ -23,6 +23,9 @@ const EMPTY_ICP = {
   min_employee_count: '',
   max_employee_count: '',
   required_lead_sources: [],
+  required_contact_levels: [],
+  required_contact_departments: [],
+  min_contacts_on_account: '',
   min_engagement_score: '',
   weight_industry_match: 1.0,
   weight_region_match: 0.8,
@@ -66,6 +69,7 @@ export default function ICPBuilder() {
       max_amount: icp.max_amount ?? '',
       min_employee_count: icp.min_employee_count ?? '',
       max_employee_count: icp.max_employee_count ?? '',
+      min_contacts_on_account: icp.min_contacts_on_account ?? '',
       min_engagement_score: icp.min_engagement_score ?? '',
     });
     setTestResult(null);
@@ -86,6 +90,7 @@ export default function ICPBuilder() {
         max_amount: draft.max_amount === '' ? null : Number(draft.max_amount),
         min_employee_count: draft.min_employee_count === '' ? null : Number(draft.min_employee_count),
         max_employee_count: draft.max_employee_count === '' ? null : Number(draft.max_employee_count),
+        min_contacts_on_account: draft.min_contacts_on_account === '' ? null : Number(draft.min_contacts_on_account),
         min_engagement_score: draft.min_engagement_score === '' ? null : Number(draft.min_engagement_score),
       };
       delete payload.id;
@@ -249,6 +254,25 @@ export default function ICPBuilder() {
                   <input className="input-field font-mono" type="number"
                          value={draft.max_employee_count}
                          onChange={(e) => setDraft({ ...draft, max_employee_count: e.target.value })} />
+                </Row>
+                <Row label="Required contact levels (e.g. VP, C-level)">
+                  <input className="input-field font-mono"
+                         placeholder="comma-separated; leave empty for no filter"
+                         value={draft.required_contact_levels.join(', ')}
+                         onChange={(e) => setDraft({ ...draft,
+                           required_contact_levels: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} />
+                </Row>
+                <Row label="Required contact departments">
+                  <input className="input-field font-mono"
+                         placeholder="comma-separated; matched against Contact.Department"
+                         value={draft.required_contact_departments.join(', ')}
+                         onChange={(e) => setDraft({ ...draft,
+                           required_contact_departments: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} />
+                </Row>
+                <Row label="Min contacts on Account">
+                  <input className="input-field font-mono" type="number"
+                         value={draft.min_contacts_on_account}
+                         onChange={(e) => setDraft({ ...draft, min_contacts_on_account: e.target.value })} />
                 </Row>
               </div>
             </Section>

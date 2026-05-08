@@ -69,6 +69,19 @@ class IdealCustomerProfile(Base):
     min_employee_count = Column(Integer, nullable=True)
     max_employee_count = Column(Integer, nullable=True)
 
+    # Contact-level hard filters — empty list / NULL = "no filter".
+    # required_contact_levels: subset of {C-level, VP, Director, Manager, IC};
+    #   matched against the primary Contact's Title via a case-insensitive
+    #   substring map (see scorer.LEVEL_PATTERNS).
+    # required_contact_departments: matched against Contact.Department
+    #   (case-insensitive substring).
+    # min_contacts_on_account: requires at least N Contact records on the Opp's
+    #   Account (uses _contact_count_on_account already populated at predict
+    #   time by salesforce_fetch._enrich_opp_with_relations).
+    required_contact_levels = Column(Text, nullable=False, default="[]")
+    required_contact_departments = Column(Text, nullable=False, default="[]")
+    min_contacts_on_account = Column(Integer, nullable=True)
+
     # Required signals (soft, but gated by a minimum threshold).
     required_lead_sources = Column(Text, nullable=False, default="[]")
     min_engagement_score = Column(Float, nullable=True)
@@ -112,6 +125,22 @@ class IdealCustomerProfile(Base):
     @required_lead_sources_list.setter
     def required_lead_sources_list(self, v: list[str]) -> None:
         self.required_lead_sources = json.dumps(v or [])
+
+    @property
+    def required_contact_levels_list(self) -> list[str]:
+        return json.loads(self.required_contact_levels or "[]")
+
+    @required_contact_levels_list.setter
+    def required_contact_levels_list(self, v: list[str]) -> None:
+        self.required_contact_levels = json.dumps(v or [])
+
+    @property
+    def required_contact_departments_list(self) -> list[str]:
+        return json.loads(self.required_contact_departments or "[]")
+
+    @required_contact_departments_list.setter
+    def required_contact_departments_list(self, v: list[str]) -> None:
+        self.required_contact_departments = json.dumps(v or [])
 
 
 class ICPMatchScore(Base):

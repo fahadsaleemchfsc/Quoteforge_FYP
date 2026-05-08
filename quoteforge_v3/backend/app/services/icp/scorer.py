@@ -41,6 +41,9 @@ class ICPDefinition:
     min_employee_count: int | None = None
     max_employee_count: int | None = None
     required_lead_sources: list[str] = field(default_factory=list)
+    required_contact_levels: list[str] = field(default_factory=list)
+    required_contact_departments: list[str] = field(default_factory=list)
+    min_contacts_on_account: int | None = None
     min_engagement_score: float | None = None
     weight_industry_match: float = 1.0
     weight_region_match: float = 0.8
@@ -71,6 +74,33 @@ def _coerce_float(v: Any) -> float | None:
         return float(v)
     except (TypeError, ValueError):
         return None
+
+
+# Map ICP-level "level" tokens to case-insensitive substrings looked for in
+# Contact.Title. Title is freeform text in Salesforce, so we match generously
+# rather than require exact strings. Order matters in the lookup loop only for
+# logging — any single hit qualifies the level as matched.
+LEVEL_PATTERNS: dict[str, list[str]] = {
+    "C-level": ["chief ", "ceo", "cfo", "cto", "coo", "cmo", "cio", "cso"],
+    "VP": ["vp ", "vice president"],
+    "Director": ["director"],
+    "Manager": ["manager"],
+    "IC": ["analyst", "engineer", "specialist", "associate", "consultant"],
+}
+
+
+def _title_matches_any_level(title: str, levels: list[str]) -> bool:
+    """True iff `title` matches at least one of the requested levels under
+    LEVEL_PATTERNS. Empty title or empty levels list returns False — the
+    caller decides whether that's a filter failure or "no opinion"."""
+    if not title or not levels:
+        return False
+    title_lc = title.lower()
+    for level in levels:
+        for pattern in LEVEL_PATTERNS.get(level, [level.lower()]):
+            if pattern in title_lc:
+                return True
+    return False
 
 
 def score_opportunity_against_icp(
@@ -168,6 +198,81 @@ def score_opportunity_against_icp(
             ),
         })
         return ScoringResult(match_score=0.0, match_reasons=reasons)
+
+    # ─── Contact-level hard filters ──────────────────────────────
+    # Reads three opp-dict fields populated by salesforce_fetch._enrich_opp_with_relations:
+    #   _primary_contact_title       — Contact.Title for the Opp's primary Contact
+    #   _primary_contact_department  — Contact.Department for that Contact
+    #   _contact_count_on_account    — count of Contact records on the Opp's Account
+    # Empty / missing values are treated as filter failures when the rule is
+    # specified — same fail-closed semantics as included_industries.
+
+    contact_title = str(opp_data.get("_primary_contact_title") or "").strip()
+    if icp.required_contact_levels:
+        if _title_matches_any_level(contact_title, icp.required_contact_levels):
+            reasons.append({
+                "factor": "contact_level", "status": "match",
+                "detail": (
+                    f"contact title '{contact_title}' matches one of "
+                    f"{icp.required_contact_levels}."
+                ),
+            })
+        else:
+            reasons.append({
+                "factor": "contact_level", "status": "mismatch",
+                "detail": (
+                    f"contact title '{contact_title or 'Unknown'}' does not match "
+                    f"required levels {icp.required_contact_levels}."
+                ),
+            })
+            return ScoringResult(match_score=0.0, match_reasons=reasons)
+
+    contact_dept = str(opp_data.get("_primary_contact_department") or "").strip()
+    if icp.required_contact_departments:
+        dept_lc = contact_dept.lower()
+        matched = any(
+            d.lower() in dept_lc for d in icp.required_contact_departments
+        )
+        if matched:
+            reasons.append({
+                "factor": "contact_department", "status": "match",
+                "detail": (
+                    f"contact department '{contact_dept}' matches one of "
+                    f"{icp.required_contact_departments}."
+                ),
+            })
+        else:
+            reasons.append({
+                "factor": "contact_department", "status": "mismatch",
+                "detail": (
+                    f"contact department '{contact_dept or 'Unknown'}' does not "
+                    f"match required {icp.required_contact_departments}."
+                ),
+            })
+            return ScoringResult(match_score=0.0, match_reasons=reasons)
+
+    contact_count = opp_data.get("_contact_count_on_account") or 0
+    try:
+        contact_count_i = int(contact_count)
+    except (TypeError, ValueError):
+        contact_count_i = 0
+    if icp.min_contacts_on_account is not None:
+        if contact_count_i < icp.min_contacts_on_account:
+            reasons.append({
+                "factor": "contacts_on_account", "status": "mismatch",
+                "detail": (
+                    f"only {contact_count_i} contact(s) on the Account, "
+                    f"ICP requires at least {icp.min_contacts_on_account}."
+                ),
+            })
+            return ScoringResult(match_score=0.0, match_reasons=reasons)
+        reasons.append({
+            "factor": "contacts_on_account", "status": "match",
+            "detail": (
+                f"{contact_count_i} contact(s) on the Account meets the "
+                f"ICP minimum of {icp.min_contacts_on_account}."
+            ),
+        })
 
     # ─── Soft signals (weighted) ─────────────────────────────────
 

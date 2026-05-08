@@ -469,6 +469,36 @@ async def migrate_add_crm_connections_tenant_id() -> None:
         )
 
 
+async def migrate_add_icp_contact_fields() -> None:
+    """
+    One-shot: add Contact-level filter columns to ideal_customer_profiles.
+    Idempotent — only adds the columns that don't already exist.
+    """
+    from app.core.database import engine
+
+    async with engine.begin() as conn:
+        rows = await conn.exec_driver_sql(
+            "PRAGMA table_info(ideal_customer_profiles)"
+        )
+        existing = {r[1] for r in rows.fetchall()}
+        if not existing:
+            # Table not yet created — Base.metadata.create_all will produce
+            # the new shape directly on next init_db(). Nothing to do here.
+            return
+        for col, ddl in [
+            ("required_contact_levels", "TEXT NOT NULL DEFAULT '[]'"),
+            ("required_contact_departments", "TEXT NOT NULL DEFAULT '[]'"),
+            ("min_contacts_on_account", "INTEGER"),
+        ]:
+            if col not in existing:
+                await conn.exec_driver_sql(
+                    f"ALTER TABLE ideal_customer_profiles ADD COLUMN {col} {ddl}"
+                )
+                logger.info(
+                    "added ideal_customer_profiles.%s column", col,
+                )
+
+
 async def migrate_add_negotiation_mode_column() -> None:
     """
     One-shot: add tenant_configs.negotiation_mode if it's missing.

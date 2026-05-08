@@ -147,9 +147,17 @@ async def fetch_opportunity_by_id(
     async with async_session() as db:
         sf = await get_salesforce_client(db, tenant_id)
     if sf is None:
-        # Prediction without SF — emit a synthetic single-row with known Id so
-        # the predictor still returns a result for demo purposes.
-        return _synthetic_single_opp(mapping, opp_id=opportunity_id)
+        # No live Salesforce client for this tenant — return None so the
+        # predictor surfaces a clean 404 to the caller. Previously this path
+        # fell back to _synthetic_single_opp, which silently fabricated a
+        # prediction from a hardcoded healthy-deal profile. That hid real
+        # disconnect/reauth failures from the LWC.
+        logger.warning(
+            "insights.fetch: no Salesforce client for tenant=%s — "
+            "predict path will return 404 for opp %s",
+            tenant_id, opportunity_id,
+        )
+        return None
 
     select_cols = _mapped_select_columns(mapping)
     soql = (
@@ -177,6 +185,11 @@ async def _enrich_opp_with_relations(sf, opp: dict[str, Any]) -> None:
     opp["_contact_activities"] = []
     opp["_account_activities"] = []
     opp["_contact_count_on_account"] = 0
+    # Contact field values consumed by the deterministic ICP scorer (NOT by
+    # the LightGBM feature pipeline). features.py does not read these — kept
+    # off the model surface so v1's pkl stays valid.
+    opp["_primary_contact_title"] = ""
+    opp["_primary_contact_department"] = ""
 
     account_id = opp.get("AccountId")
     one_year_ago = (datetime.now(timezone.utc).date() - timedelta(days=365)).isoformat()
@@ -192,6 +205,22 @@ async def _enrich_opp_with_relations(sf, opp: dict[str, Any]) -> None:
             primary_contact_id = role_rows[0].get("ContactId")
     except Exception as e:
         logger.info("insights.enrich: primary-contact query failed (%s)", e)
+
+    # Pull primary Contact's Title + Department for the ICP scorer's
+    # required_contact_levels / required_contact_departments rules. Failure
+    # leaves the fields empty strings — the scorer treats empty as "no value"
+    # which fails any specified rule (consistent with existing hard filters).
+    if primary_contact_id:
+        try:
+            c_rows = await sf._query(
+                f"SELECT Title, Department FROM Contact "
+                f"WHERE Id='{primary_contact_id}' LIMIT 1"
+            )
+            if c_rows:
+                opp["_primary_contact_title"] = c_rows[0].get("Title") or ""
+                opp["_primary_contact_department"] = c_rows[0].get("Department") or ""
+        except Exception as e:
+            logger.info("insights.enrich: contact-fields query failed (%s)", e)
 
     # Activities on the primary Contact (Task + Event via WhoId).
     if primary_contact_id:

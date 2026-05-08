@@ -59,6 +59,9 @@ class ICPPayload(BaseModel):
     min_employee_count: int | None = None
     max_employee_count: int | None = None
     required_lead_sources: list[str] = Field(default_factory=list)
+    required_contact_levels: list[str] = Field(default_factory=list)
+    required_contact_departments: list[str] = Field(default_factory=list)
+    min_contacts_on_account: int | None = None
     min_engagement_score: float | None = None
     weight_industry_match: float = Field(default=1.0, ge=0, le=2)
     weight_region_match: float = Field(default=0.8, ge=0, le=2)
@@ -79,6 +82,9 @@ class ICPSchema(BaseModel):
     min_employee_count: int | None
     max_employee_count: int | None
     required_lead_sources: list[str]
+    required_contact_levels: list[str]
+    required_contact_departments: list[str]
+    min_contacts_on_account: int | None
     min_engagement_score: float | None
     weight_industry_match: float
     weight_region_match: float
@@ -120,6 +126,9 @@ def _serialize(row: IdealCustomerProfile) -> ICPSchema:
         min_employee_count=row.min_employee_count,
         max_employee_count=row.max_employee_count,
         required_lead_sources=row.required_lead_sources_list,
+        required_contact_levels=row.required_contact_levels_list,
+        required_contact_departments=row.required_contact_departments_list,
+        min_contacts_on_account=row.min_contacts_on_account,
         min_engagement_score=row.min_engagement_score,
         weight_industry_match=row.weight_industry_match,
         weight_region_match=row.weight_region_match,
@@ -144,6 +153,9 @@ def _definition_from_row(row: IdealCustomerProfile) -> ICPDefinition:
         min_employee_count=row.min_employee_count,
         max_employee_count=row.max_employee_count,
         required_lead_sources=row.required_lead_sources_list,
+        required_contact_levels=row.required_contact_levels_list,
+        required_contact_departments=row.required_contact_departments_list,
+        min_contacts_on_account=row.min_contacts_on_account,
         min_engagement_score=row.min_engagement_score,
         weight_industry_match=row.weight_industry_match,
         weight_region_match=row.weight_region_match,
@@ -163,6 +175,9 @@ def _apply_payload(row: IdealCustomerProfile, body: ICPPayload) -> None:
     row.min_employee_count = body.min_employee_count
     row.max_employee_count = body.max_employee_count
     row.required_lead_sources_list = body.required_lead_sources
+    row.required_contact_levels_list = body.required_contact_levels
+    row.required_contact_departments_list = body.required_contact_departments
+    row.min_contacts_on_account = body.min_contacts_on_account
     row.min_engagement_score = body.min_engagement_score
     row.weight_industry_match = body.weight_industry_match
     row.weight_region_match = body.weight_region_match

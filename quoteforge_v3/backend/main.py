@@ -47,6 +47,7 @@ async def lifespan(app: FastAPI):
         migrate_add_insights_v65_columns,
         migrate_add_user_tenant_id,
         migrate_add_crm_connections_tenant_id,
+        migrate_add_icp_contact_fields,
         bootstrap_doc_id_counters,
     )
     # Schema migration must run before seed_database, which queries User —
@@ -67,6 +68,7 @@ async def lifespan(app: FastAPI):
     # every user has a tenant_id.
     await migrate_add_user_tenant_id()
     await migrate_add_crm_connections_tenant_id()
+    await migrate_add_icp_contact_fields()
     await migrate_tenant_config_to_guardrails()
     await bootstrap_doc_id_counters()
     # Demo seed — idempotent, generates synthetic activity for the dashboard + impact preview
