@@ -347,7 +347,10 @@ async def quick_generate(
         ],
     )
 
-    result = await generate_quote(gen_request, db, current_user)
+    # Pass tenant_id explicitly: when a FastAPI route is called as a plain
+    # Python coroutine, `Depends(...)` defaults are not resolved, so omitting
+    # this leaves tenant_id as a Depends instance and breaks downstream SQL.
+    result = await generate_quote(gen_request, db, current_user, tenant_id)
 
     # Log activity back to SF
     try:
@@ -452,7 +455,7 @@ async def create_deal_from_prompt(
             output_format=output_format,
             line_items=[LineItem(**li) for li in parsed["line_items"]],
         )
-        gen_result = await generate_quote(gen_request, db, current_user)
+        gen_result = await generate_quote(gen_request, db, current_user, tenant_id)
         result["steps"]["proposal_generated"] = gen_result["doc_id"]
         result["salesforce_synced"] = False
         return result
@@ -514,7 +517,7 @@ async def create_deal_from_prompt(
             line_items=[LineItem(**li) for li in parsed["line_items"]],
         )
 
-        gen_result = await generate_quote(gen_request, db, current_user)
+        gen_result = await generate_quote(gen_request, db, current_user, tenant_id)
         result["steps"]["proposal_generated"] = gen_result["doc_id"]
         result["doc_id"] = gen_result["doc_id"]
         result["pricing"] = gen_result["pricing"]
@@ -583,7 +586,7 @@ async def generate_from_salesforce_deal(
 
     # Import and call the generation endpoint logic
     from app.routers.quotes import generate_quote
-    result = await generate_quote(gen_request, db, current_user)
+    result = await generate_quote(gen_request, db, current_user, tenant_id)
 
     # Step 3: Log activity back to Salesforce
     try:
