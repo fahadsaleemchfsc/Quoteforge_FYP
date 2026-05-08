@@ -7,7 +7,7 @@
 import { LightningElement, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import quickGenerate from '@salesforce/apex/QuoteForgeController.quickGenerate';
-import getDownloadUrl from '@salesforce/apex/QuoteForgeController.getDownloadUrl';
+import downloadDocument from '@salesforce/apex/QuoteForgeController.downloadDocument';
 import submitFeedback from '@salesforce/apex/QuoteForgeController.submitFeedback';
 
 export default class QuoteForgeQuickTrigger extends LightningElement {
@@ -74,7 +74,23 @@ export default class QuoteForgeQuickTrigger extends LightningElement {
             }));
         } catch (error) {
             this.hasError = true;
-            this.errorMessage = error.body?.message || error.message || 'Generation failed';
+            let raw = error.body?.message || error.message || 'Generation failed';
+            // Apex wraps backend errors as "{statusCode} - {responseBody}". When
+            // responseBody is FastAPI's `{"detail": "..."}` shape, surface only
+            // the detail string instead of the concatenated raw form.
+            const dashIdx = raw.indexOf(' - ');
+            if (dashIdx > -1) {
+                const tail = raw.slice(dashIdx + 3).trim();
+                try {
+                    const parsed = JSON.parse(tail);
+                    if (parsed && typeof parsed.detail === 'string') {
+                        raw = parsed.detail;
+                    }
+                } catch (_e) {
+                    // tail wasn't JSON — leave raw as the concatenated string.
+                }
+            }
+            this.errorMessage = raw;
         } finally {
             this.isProcessing = false;
         }
@@ -82,12 +98,31 @@ export default class QuoteForgeQuickTrigger extends LightningElement {
 
     async handleDownload() {
         try {
-            const url = await getDownloadUrl({ docId: this.generatedDocId });
-            window.open(url, '_blank');
+            const resultJson = await downloadDocument({ docId: this.generatedDocId });
+            const result = JSON.parse(resultJson);
+            if (result.error) throw new Error(result.error);
+
+            // Decode base64 PDF/DOCX bytes into a Blob and trigger a browser
+            // save via a synthetic <a download> click. window.open against the
+            // backend doesn't work because (a) callout: URLs aren't browser-
+            // resolvable and (b) the endpoint requires JWT auth the browser
+            // tab doesn't carry.
+            const binary = atob(result.content_base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const blob = new Blob([bytes], { type: result.content_type || 'application/pdf' });
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = result.filename || `${this.generatedDocId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Download Error',
-                message: 'Failed to get link',
+                message: error.message || 'Failed to download document',
                 variant: 'error',
             }));
         }
