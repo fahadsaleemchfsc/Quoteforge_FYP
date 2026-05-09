@@ -17,6 +17,7 @@ are deleted so the next /predict call re-scores against the new model.
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any
 
@@ -150,7 +151,20 @@ async def _maybe_retrain(tenant_id: str) -> None:
 # ─── Lifecycle ───────────────────────────────────────────────────
 
 def start_retrain_scheduler() -> None:
-    """Called from main lifespan. No-op if already running."""
+    """Called from main lifespan. No-op if already running.
+
+    Honors INSIGHTS_TRAIN_DISABLED=true as a kill switch — when set, the
+    nightly cron is not registered. Use during defense windows or any
+    period where surprise retrains would be disruptive. Manual training
+    paths (POST /api/insights/train, the admin portal training wizard)
+    are NOT gated by this flag — by design, those are intentional.
+    """
+    if os.environ.get("INSIGHTS_TRAIN_DISABLED", "").lower() in ("1", "true", "yes"):
+        logger.info(
+            "insights_retrain_worker: nightly cron disabled via "
+            "INSIGHTS_TRAIN_DISABLED env var",
+        )
+        return
     global _scheduler
     if _scheduler is not None:
         return

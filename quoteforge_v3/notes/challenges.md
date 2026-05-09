@@ -80,6 +80,17 @@ cross-tenant leak (Phase E).
 - `document_logs` and `audit_logs` have no `tenant_id` columns either —
   the same pattern of latent isolation gap. Identified during Phase 6 test
   authoring; left for post-defense.
+- **No audit log on training events.** A v2 client-sandbox model appeared
+  on 2026-05-07 at 21:16 UTC without any record of who triggered it.
+  Three possible sources (`POST /api/insights/train`, the admin portal
+  training wizard, or `run_retrain_pass()` invoked manually) and no
+  visibility into which fired. Hardening: every training-write path
+  should append a row to a new `insights_training_events` table with
+  `tenant_id`, `triggered_by_user_id`, `source_endpoint`, `client_ip`,
+  `model_version_produced`, `trained_at`. The model-list view in the
+  admin portal would then show provenance per version. Post-defense.
+  Workaround for defense window: `INSIGHTS_TRAIN_DISABLED=true` in
+  `backend/.env` blocks the nightly cron (manual paths still active).
 - **`oauth_callback` does not parse the `reauth:<id>` state prefix.**
   `reauthenticate_connection` (`app/routers/crm.py:737`) sets
   `state=f"reauth:{conn_id}"`, but the callback at `:201` does
