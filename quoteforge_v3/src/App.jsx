@@ -6,7 +6,7 @@ import { PAGE_META } from '@constants/navigation';
 import {
   Dashboard, Generate, Templates, Products, Approvals, Guardrails, Negotiations, Pricing, Prompts,
   CRM, Documents, Users, Settings, Login, ShareLinks, BuyerRoom,
-  InsightsSetup, InsightsModels, ICPBuilder,
+  InsightsSetup, InsightsModels, ICPBuilder, SuperAdmin,
 } from '@pages';
 // Public marketing pages — live outside the AuthProvider so they render
 // with their own visual style (no admin sidebar/topbar).
@@ -29,6 +29,13 @@ function RequireAuth({ children }) {
 function RequireAdmin({ children, fallback }) {
   const { isAdmin } = useAuth();
   if (!isAdmin) return fallback || <Navigate to="/" replace />;
+  return children;
+}
+
+// ─── Super-Admin Route (cross-tenant platform view) ─────────
+function RequireSuperAdmin({ children }) {
+  const { isSuperAdmin } = useAuth();
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
   return children;
 }
 
@@ -67,6 +74,9 @@ function AppShell() {
             <Route path="/prompts" element={<RequireAdmin><Prompts /></RequireAdmin>} />
             <Route path="/users" element={<Users />} />
             <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
+
+            {/* Platform super-admin (cross-tenant) */}
+            <Route path="/admin/tenants" element={<RequireSuperAdmin><SuperAdmin /></RequireSuperAdmin>} />
 
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />

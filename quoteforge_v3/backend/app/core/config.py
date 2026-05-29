@@ -46,6 +46,14 @@ class Settings(BaseSettings):
     # Salesforce Lightning hosts are matched via regex in app/core/cors.py.
     CORS_ALLOW_ORIGINS: str = ""
 
+    # Comma-separated list of email addresses with platform-wide
+    # super-admin access — they can see every tenant via the
+    # /api/admin/* endpoints and the /admin/tenants frontend page.
+    # Stored as an env var, NOT a DB flag, so a runaway script can't
+    # accidentally elevate a user account. Defaults to the project
+    # owner's address for FYP demos; override in prod.
+    SUPER_ADMIN_EMAILS: str = "fahad.saleem@demandzen.com"
+
     # Agent Gateway (Module 1)
     GATEWAY_DEV_AUTH: bool = True              # TODO: flip to False once OAuth 2.1 lands
     GATEWAY_ISSUER: str = "https://quoteforge.local"

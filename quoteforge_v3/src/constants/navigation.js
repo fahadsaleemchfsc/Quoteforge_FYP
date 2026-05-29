@@ -39,4 +39,5 @@ export const PAGE_META = {
   '/insights/setup':  { title: 'Deal Insights — Setup',  subtitle: 'Map your Salesforce schema to the prediction model' },
   '/insights/models': { title: 'Deal Insights — Models', subtitle: 'Trained win-probability classifiers + metrics' },
   '/icp':             { title: 'ICP Builder',             subtitle: 'Define your ideal customer profile and score open deals against it' },
+  '/admin/tenants':   { title: 'Platform · Workspaces',   subtitle: 'Every QuoteForge tenant in this deployment' },
 };

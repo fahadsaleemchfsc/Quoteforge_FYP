@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, DollarSign, Sparkles, Users, Settings as SettingsIcon,
   Zap, Package, Clock, Shield, Brain, Link as LinkIcon, Send, Link2,
-  TrendingUp,
+  TrendingUp, Building2,
 } from 'lucide-react';
 import { useAuth } from '@context/AuthContext';
 import { usePendingApprovalCount } from '@hooks';
@@ -56,12 +56,23 @@ const SECTIONS = [
       { id: 'generate',  label: 'Generate',         path: '/generate',  icon: Zap },
     ],
   },
+  // Platform super-admin section — rendered only when the calling user
+  // is on the SUPER_ADMIN_EMAILS allowlist. Whole section disappears
+  // for regular tenant admins; no chrome leaks.
+  {
+    id: 'platform',
+    label: 'PLATFORM',
+    superAdminOnly: true,
+    items: [
+      { id: 'tenants', label: 'Workspaces', path: '/admin/tenants', icon: Building2, superAdminOnly: true },
+    ],
+  },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin } = useAuth();
   const { count: pendingApprovals } = usePendingApprovalCount(true);
 
   const width = collapsed ? 52 : 220;
@@ -97,7 +108,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Sections */}
       <nav className="flex-1 py-2 overflow-y-auto">
         {SECTIONS.map((section) => {
-          const visible = section.items.filter((i) => isAdmin || !i.adminOnly);
+          // Hide whole sections that are super-admin-only and we aren't.
+          if (section.superAdminOnly && !isSuperAdmin) return null;
+          const visible = section.items.filter(
+            (i) =>
+              (!i.adminOnly || isAdmin) &&
+              (!i.superAdminOnly || isSuperAdmin),
+          );
           if (!visible.length) return null;
           return (
             <div key={section.id} className="mb-3 last:mb-0">

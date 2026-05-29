@@ -56,6 +56,30 @@ async def require_admin(user=Depends(get_current_user)):
     return user
 
 
+def _super_admin_emails() -> set[str]:
+    raw = (settings.SUPER_ADMIN_EMAILS or "").strip()
+    return {e.strip().lower() for e in raw.split(",") if e.strip()}
+
+
+def is_super_admin(user) -> bool:
+    """True iff this user's email is on the SUPER_ADMIN_EMAILS allowlist.
+
+    Used both as a dependency (require_super_admin) and as a flag the
+    /auth/me endpoint surfaces so the frontend can show or hide the
+    super-admin nav entry.
+    """
+    return bool(user and user.email and user.email.lower() in _super_admin_emails())
+
+
+async def require_super_admin(user=Depends(get_current_user)):
+    if not is_super_admin(user):
+        raise HTTPException(
+            status_code=403,
+            detail="Platform super-admin access required",
+        )
+    return user
+
+
 async def get_current_tenant_id(user=Depends(get_current_user)) -> str:
     """The authenticated user's tenant_id (UUID). Use this in routers
     instead of resolving via DEFAULT_TENANT_SLUG."""

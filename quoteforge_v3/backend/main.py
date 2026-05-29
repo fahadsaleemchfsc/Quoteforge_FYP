@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.cors import cors_config
 from app.core.database import init_db
-from app.routers import auth, users, templates, pricing, prompts, crm, quotes, settings, learning, products, approvals, tenant_config, guardrails, negotiations, offers, activity, share_tokens, buyer_room, sf_prompt_to_quote, insights, icp
+from app.routers import auth, users, templates, pricing, prompts, crm, quotes, settings, learning, products, approvals, tenant_config, guardrails, negotiations, offers, activity, share_tokens, buyer_room, sf_prompt_to_quote, insights, icp, admin
 from app.integrations import salesforce_oauth as salesforce_oauth_integration
 from app.integrations import salesforce_actions as salesforce_actions_integration
 # Import so SQLAlchemy registers the new tables under Base.metadata before init_db().
@@ -137,6 +137,9 @@ app.include_router(buyer_room.router, prefix="/api")
 app.include_router(sf_prompt_to_quote.router, prefix="/api")
 app.include_router(insights.router, prefix="/api")
 app.include_router(icp.router, prefix="/api")
+# Platform super-admin (cross-tenant visibility). Gated by
+# SUPER_ADMIN_EMAILS env var; see app/routers/admin.py.
+app.include_router(admin.router, prefix="/api")
 # One-click Salesforce Connected App flow — distinct from the legacy
 # /api/crm endpoints which use CRMConnection.oauth_tokens JSON.
 app.include_router(salesforce_oauth_integration.router, prefix="/api")

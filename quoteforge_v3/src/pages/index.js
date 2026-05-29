@@ -17,3 +17,4 @@ export { default as Login } from './Login';
 export { default as InsightsSetup } from './InsightsSetup';
 export { default as InsightsModels } from './InsightsModels';
 export { default as ICPBuilder } from './ICPBuilder';
+export { default as SuperAdmin } from './SuperAdmin';

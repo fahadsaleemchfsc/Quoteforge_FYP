@@ -25,6 +25,9 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin';
+  // Platform-wide super-admin (cross-tenant). Backend sets isSuperAdmin
+  // on /auth/login + /auth/me based on the SUPER_ADMIN_EMAILS allowlist.
+  const isSuperAdmin = !!user?.isSuperAdmin;
 
   const login = useCallback(async (email, password) => {
     try {
@@ -84,8 +87,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, isAuthenticated, isAdmin, login, logout, getAllUsers }),
-    [user, isAuthenticated, isAdmin, login, logout, getAllUsers]
+    () => ({ user, isAuthenticated, isAdmin, isSuperAdmin, login, logout, getAllUsers }),
+    [user, isAuthenticated, isAdmin, isSuperAdmin, login, logout, getAllUsers]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
