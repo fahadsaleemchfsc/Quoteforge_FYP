@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Remote Site Setting — defence-in-depth for direct URL callouts.
+    The Named Credential `QuoteForge_API` is the primary path; this
+    entry covers anything that bypasses it (e.g. older Visualforce or
+    JavaScript fetches).
+
+    BEFORE DEPLOY: replace `YOUR-RENDER-SERVICE.onrender.com` with the
+    actual hostname Render assigns to the backend.
+-->
 <RemoteSiteSetting xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>QuoteForge_API</fullName>
-    <description>QuoteForge Backend API</description>
+    <description>QuoteForge Backend API (Render-hosted)</description>
     <isActive>true</isActive>
-    <url>https://learning-surgeon-harvey-assisted.trycloudflare.com</url>
+    <url>https://YOUR-RENDER-SERVICE.onrender.com</url>
     <disableProtocolSecurity>false</disableProtocolSecurity>
 </RemoteSiteSetting>

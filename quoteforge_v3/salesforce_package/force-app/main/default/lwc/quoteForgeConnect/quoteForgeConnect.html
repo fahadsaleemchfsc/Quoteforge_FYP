@@ -1,0 +1,52 @@
+<template>
+    <lightning-card title="QuoteForge — Salesforce Connection" icon-name="utility:link">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+
+            <template if:true={loading}>
+                <lightning-spinner alternative-text="Checking connection" size="small"></lightning-spinner>
+            </template>
+
+            <template if:false={loading}>
+                <div class="slds-grid slds-grid_vertical-align-center slds-gutters_xx-small">
+                    <div class="slds-col">
+                        <lightning-badge label={pillLabel} variant={pillVariant}></lightning-badge>
+                    </div>
+                    <div class="slds-col slds-text-align_right">
+                        <lightning-button
+                            label={primaryActionLabel}
+                            variant={primaryActionVariant}
+                            onclick={handlePrimaryClick}
+                            disabled={busy}>
+                        </lightning-button>
+                    </div>
+                </div>
+
+                <template if:true={connected}>
+                    <div class="slds-m-top_medium slds-box slds-box_xx-small slds-theme_shade">
+                        <dl class="slds-dl_horizontal">
+                            <dt class="slds-dl_horizontal__label">Org instance</dt>
+                            <dd class="slds-dl_horizontal__detail">{instanceUrl}</dd>
+                            <dt class="slds-dl_horizontal__label">Granted scopes</dt>
+                            <dd class="slds-dl_horizontal__detail">{scopes}</dd>
+                        </dl>
+                    </div>
+                </template>
+
+                <template if:false={connected}>
+                    <p class="slds-text-body_small slds-m-top_small slds-text-color_weak">
+                        Clicking Connect opens a Salesforce login popup. After you approve,
+                        QuoteForge can push quotes and read opportunities in this org on
+                        your behalf. Revoke any time with Disconnect.
+                    </p>
+                </template>
+
+                <template if:true={errorMessage}>
+                    <div class="slds-m-top_medium slds-text-color_error">
+                        {errorMessage}
+                    </div>
+                </template>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>

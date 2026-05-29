@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    QuoteForge — Connected App (one-click install).
+
+    Deploy this once in a *packaging org* (free Developer Edition is fine):
+        cd salesforce_package
+        sf project deploy start -d force-app/main/default/connectedApps
+
+    Salesforce will provision a Consumer Key + Consumer Secret. Read them
+    from Setup → App Manager → QuoteForge → View → Manage Consumer Details
+    and paste them into Render as SALESFORCE_CLIENT_ID and
+    SALESFORCE_CLIENT_SECRET.
+
+    BEFORE DEPLOY: replace `YOUR-RENDER-SERVICE.onrender.com` in
+    <callbackUrl> below with the actual hostname Render assigns. The URL
+    must match exactly — Salesforce rejects callbacks that don't.
+-->
+<ConnectedApp xmlns="http://soap.sforce.com/2006/04/metadata">
+    <contactEmail>fahad.saleem@demandzen.com</contactEmail>
+    <label>QuoteForge</label>
+    <description>One-click connection between Salesforce and the QuoteForge AI quote/proposal generation backend.</description>
+    <oauthConfig>
+        <callbackUrl>https://YOUR-RENDER-SERVICE.onrender.com/api/integrations/salesforce/callback</callbackUrl>
+        <isAdminApproved>false</isAdminApproved>
+        <isConsumerSecretOptional>false</isConsumerSecretOptional>
+        <isIntrospectAllTokens>false</isIntrospectAllTokens>
+        <isSecretRequiredForRefreshToken>true</isSecretRequiredForRefreshToken>
+        <!-- api: REST/SOAP calls; RefreshToken + OfflineAccess: backend
+             can refresh long-lived sessions. Matches _OAUTH_SCOPES in
+             backend/app/integrations/salesforce_oauth.py. -->
+        <scopes>Api</scopes>
+        <scopes>RefreshToken</scopes>
+        <scopes>OfflineAccess</scopes>
+    </oauthConfig>
+</ConnectedApp>

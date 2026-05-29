@@ -65,7 +65,9 @@ public with sharing class QuoteForgeController {
         return cachedAuthBody;
     }
 
-    private static String getAuthToken() {
+    // public so sibling controllers (e.g. QuoteForgeConnectController) can
+    // reuse the cached JWT for backend calls without duplicating MDT lookup.
+    public static String getAuthToken() {
         if (cachedToken != null) return cachedToken;
 
         HttpRequest req = new HttpRequest();
@@ -513,12 +515,18 @@ public with sharing class QuoteForgeController {
 
         // ── Section 1 + 2: open Opps + leaderboard ───────────────
         try {
+            // LIMIT capped to fit within Apex's 90s callout timeout. The
+            // /insights/predict/batch backend processes Opps sequentially at
+            // ~10s each on the partner UAT sandbox, so 15 rows would require
+            // ~150s and time out. 5 rows × ~10s ≈ 50s, comfortably under 90s.
+            // v2 plan: parallelize the batch endpoint with asyncio.gather and
+            // restore the higher limit (see docs/v2_spec.md).
             List<Opportunity> opens = [
                 SELECT Id, Name, Amount, StageName, Account.Name, LastModifiedDate
                 FROM Opportunity
                 WHERE IsClosed = false
                 ORDER BY LastModifiedDate DESC
-                LIMIT 15
+                LIMIT 5
             ];
 
             // Launcher_opps: first five opens for the Prompt Builder card.
