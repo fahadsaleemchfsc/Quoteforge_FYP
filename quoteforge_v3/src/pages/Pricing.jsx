@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2 } from 'lucide-react';
+import { Plus, Edit3, Trash2, Globe } from 'lucide-react';
 import { StatusBadge } from '@/components/ui';
 import { PRICING_RULES } from '@/constants/mockData';
 import api from '@/services/api';
@@ -9,6 +9,7 @@ const TYPE_STYLES = {
   Discount:   { bg: 'bg-success-muted', text: 'text-success' },
   Tax:        { bg: 'bg-warning-muted', text: 'text-warning' },
 };
+const DEFAULT_TYPE_STYLE = { bg: 'bg-subtle', text: 'text-text-secondary' };
 
 export default function Pricing() {
   const [tab, setTab] = useState('all');
@@ -53,7 +54,7 @@ export default function Pricing() {
           </thead>
           <tbody>
             {filtered.map((rule, i) => {
-              const ts = TYPE_STYLES[rule.type];
+              const ts = TYPE_STYLES[rule.type] || DEFAULT_TYPE_STYLE;
               return (
                 <tr key={rule.id} className="table-row " >
                   <td className="table-cell font-semibold text-text-primary">{rule.name}</td>
