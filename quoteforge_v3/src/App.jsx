@@ -46,9 +46,15 @@ function AppShell() {
   const meta = PAGE_META[location.pathname] || { title: 'QuoteForge', subtitle: '' };
 
   return (
-    <div className="flex min-h-screen bg-app text-text-primary">
+    <div className="marketing flex min-h-screen bg-app text-text-primary relative overflow-hidden">
+      {/* Ambient marketing-palette glow behind the whole app (very subtle,
+          sits below all content so dense tables stay readable). */}
+      <div className="m-orb" style={{ top: '-14%', left: '8%', '--m-orb-size': '460px',
+            opacity: 0.10, zIndex: 0, background: 'radial-gradient(circle at 30% 30%, #8B5CF6, #7C3AED)' }} />
+      <div className="m-orb m-float--slow" style={{ bottom: '-18%', right: '4%', '--m-orb-size': '420px',
+            opacity: 0.09, zIndex: 0, background: 'radial-gradient(circle at 30% 30%, #06B6D4, #D946EF)' }} />
       <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <TopBar title={meta.title} subtitle={meta.subtitle} />
         <main className="flex-1 px-8 pb-8 overflow-auto">
           <Routes>

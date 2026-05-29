@@ -27,9 +27,9 @@ function MetricsTicker() {
   }, []);
   const m = METRICS_CYCLE[idx];
   return (
-    <div className="font-mono text-[11.5px] tracking-tight" style={{ color: '#71717A' }}>
-      <span style={{ color: '#52525B' }}>●</span>
-      <span className="ml-2">{m.label}</span>
+    <div className="font-mono text-[11.5px] tracking-tight flex items-center" style={{ color: '#71717A' }}>
+      <span className="m-pulse-dot" />
+      <span className="ml-3">{m.label}</span>
       <span className="mx-2" style={{ color: '#3F3F46' }}>·</span>
       <span style={{ color: '#D4D4D8' }}>{m.value}</span>
     </div>
@@ -64,12 +64,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="marketing min-h-screen flex">
       {/* ── Left: dark branded panel (always dark, ignores theme) ── */}
       <aside
         className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden"
         style={{ width: '45%', background: '#0A0A0B', color: '#FAFAFA' }}
       >
+        {/* Animated mesh gradient + drifting orbs (marketing primitives) */}
+        <div className="m-mesh" />
+        <div className="m-orb" style={{ top: '-8%', left: '-6%', '--m-orb-size': '420px',
+              background: 'radial-gradient(circle at 30% 30%, #8B5CF6, #7C3AED)' }} />
+        <div className="m-orb m-float--slow" style={{ bottom: '-10%', right: '-8%', '--m-orb-size': '380px',
+              background: 'radial-gradient(circle at 30% 30%, #D946EF, #7C3AED)', opacity: 0.45 }} />
         {/* Subtle grid texture */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -96,7 +102,7 @@ export default function Login() {
         <div className="relative z-10 max-w-md">
           <h1 className="font-semibold leading-[1.15] tracking-tight" style={{ fontSize: 32 }}>
             Deal infrastructure<br />
-            for the <span style={{ color: '#A78BFA' }}>agentic&nbsp;commerce</span> era.
+            for the <span className="m-gradient-text">agentic&nbsp;commerce</span> era.
           </h1>
           <p className="mt-5 text-[14px] leading-relaxed max-w-[32ch]" style={{ color: '#A1A1AA' }}>
             When buyer AIs show up to negotiate, QuoteForge is where your rules
@@ -115,10 +121,13 @@ export default function Login() {
 
       {/* ── Right: form (theme-aware surface) ── */}
       <main
-        className="flex-1 flex items-center justify-center p-8"
+        className="flex-1 flex items-center justify-center p-8 relative overflow-hidden"
         style={{ background: 'var(--bg-surface)' }}
       >
-        <div className="w-full max-w-[400px]">
+        {/* Faint violet glow echoing the marketing palette */}
+        <div className="m-orb" style={{ top: '-12%', right: '-10%', '--m-orb-size': '340px',
+              opacity: 0.16, background: 'radial-gradient(circle at 30% 30%, #8B5CF6, #06B6D4)' }} />
+        <div className="w-full max-w-[400px] relative z-10">
           {/* Mobile wordmark */}
           <div className="lg:hidden flex items-center gap-2 mb-10">
             <div
@@ -183,7 +192,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full justify-center"
+              className="btn-gradient w-full justify-center"
               style={{ height: 40, fontSize: 13.5 }}
             >
               {loading ? 'Signing in…' : (<>Sign in <ArrowRight size={14} /></>)}
