@@ -20,8 +20,8 @@ QuoteForge is a CRM-integrated automation system that generates professional, co
 | Database    | PostgreSQL                          |
 | AI          | GPT-class LLM with RAG pipeline    |
 | Documents   | ReportLab / python-docx             |
-| Integration | Salesforce & HubSpot REST APIs      |
-| Deployment  | Docker on AWS EC2                   |
+| Integration | Salesforce Connected App (OAuth 2.0 + PKCE) & HubSpot REST APIs |
+| Deployment  | Docker on Render (web + managed Postgres)                       |
 
 ## Project Structure
 
@@ -254,6 +254,16 @@ python -m training.evaluate_insights_module
 ## Connecting to the Backend
 
 The Vite dev server proxies `/api` → `http://localhost:8000`. The service files in `src/services/` are pre-wired with axios and JWT auth. Replace the mock data in `src/constants/mockData.js` with real API calls as the backend is built.
+
+## Deploying to Production (Render + Salesforce Connected App)
+
+The full one-click install runbook lives in [`ONE_CLICK_INSTALL.md`](./ONE_CLICK_INSTALL.md). TL;DR:
+
+1. Apply `render.yaml` as a Render Blueprint — provisions `quoteforge-backend` (Docker) + `quoteforge-db` (Postgres).
+2. Deploy the Connected App from `salesforce_package/force-app/main/default/connectedApps/`, grab the Consumer Key/Secret, paste them into Render env vars.
+3. Deploy the rest of the Salesforce package; customers install via the package install URL and click **Connect** on the QuoteForge Dashboard.
+
+The Salesforce ↔ backend handshake uses OAuth 2.0 Web Server Flow with PKCE, signed state, and Fernet-encrypted token storage. See [`backend/app/integrations/salesforce_oauth.py`](./backend/app/integrations/salesforce_oauth.py) for the flow and [`backend/app/integrations/salesforce_client.py`](./backend/app/integrations/salesforce_client.py) for the auto-refreshing REST client.
 
 ## License
 
