@@ -1,12 +1,22 @@
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.database import get_db
-from app.core.security import get_current_user, require_admin
+from app.core.security import get_current_user, get_current_tenant_id, require_admin
 from app.models.template import Template
 from app.schemas.template import TemplateCreate, TemplateUpdate
+from app.services.default_master_template import DEFAULT_MASTER_HTML
 
 router = APIRouter(prefix="/templates", tags=["templates"])
+
+
+class MasterTemplateUpdate(BaseModel):
+    """Payload for PUT /templates/master — only html_body is editable; the
+    name/format/status are kept stable so the admin can't accidentally
+    archive their own master."""
+
+    html_body: str = Field(..., min_length=1, max_length=200_000)
 
 
 def _serialize(t: Template) -> dict:
@@ -34,6 +44,88 @@ async def list_templates(
         query = query.where(Template.status == status)
     result = await db.execute(query.order_by(Template.id))
     return [_serialize(t) for t in result.scalars().all()]
+
+
+@router.get("/master")
+async def get_master_template(
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+):
+    """Current master HTML template for the calling tenant.
+
+    Falls back to the shipped default when no row exists yet — the UI
+    always has *something* to render in the editor.
+    """
+    result = await db.execute(
+        select(Template).where(
+            Template.tenant_id == tenant_id,
+            Template.is_master.is_(True),
+        )
+    )
+    master = result.scalar_one_or_none()
+    if master is None:
+        return {
+            "id": None,
+            "html_body": DEFAULT_MASTER_HTML,
+            "is_default": True,
+            "usage_count": 0,
+            "last_modified": None,
+        }
+    return {
+        "id": master.id,
+        "html_body": master.html_body or DEFAULT_MASTER_HTML,
+        "is_default": False,
+        "usage_count": master.usage_count or 0,
+        "last_modified": master.last_modified.isoformat() if master.last_modified else None,
+    }
+
+
+@router.put("/master")
+async def put_master_template(
+    payload: MasterTemplateUpdate,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    _admin=Depends(require_admin),
+):
+    """Upsert the tenant's master template. Admin-only.
+
+    No HTML validation beyond size cap — Jinja2 + xhtml2pdf surface their
+    own errors at render time, and the quotes router catches those and
+    falls back to the section renderer rather than 500ing.
+    """
+    result = await db.execute(
+        select(Template).where(
+            Template.tenant_id == tenant_id,
+            Template.is_master.is_(True),
+        )
+    )
+    master = result.scalar_one_or_none()
+    if master is None:
+        master = Template(
+            name="Master Template",
+            type="Proposal",
+            format="PDF",
+            status="active",
+            content="HTML master template — edit from Templates → Master.",
+            html_body=payload.html_body,
+            is_master=True,
+            tenant_id=tenant_id,
+            author="Admin",
+        )
+        db.add(master)
+    else:
+        master.html_body = payload.html_body
+        # Editing implicitly reactivates a previously archived master.
+        master.status = "active"
+    await db.commit()
+    await db.refresh(master)
+    return {
+        "id": master.id,
+        "html_body": master.html_body,
+        "is_default": False,
+        "usage_count": master.usage_count or 0,
+        "last_modified": master.last_modified.isoformat() if master.last_modified else None,
+    }
 
 
 @router.get("/{template_id}")

@@ -52,6 +52,7 @@ async def lifespan(app: FastAPI):
         migrate_add_user_tenant_id,
         migrate_add_crm_connections_tenant_id,
         migrate_add_icp_contact_fields,
+        migrate_add_template_master_columns,
         bootstrap_doc_id_counters,
     )
     # Schema migration must run before seed_database, which queries User —
@@ -73,6 +74,9 @@ async def lifespan(app: FastAPI):
     await migrate_add_user_tenant_id()
     await migrate_add_crm_connections_tenant_id()
     await migrate_add_icp_contact_fields()
+    # Adds html_body/is_master/tenant_id to templates and seeds a default
+    # master row per tenant — needs tenants to exist (after seed_database).
+    await migrate_add_template_master_columns()
     await migrate_tenant_config_to_guardrails()
     await bootstrap_doc_id_counters()
     # Demo seed — idempotent, generates synthetic activity for the dashboard + impact preview

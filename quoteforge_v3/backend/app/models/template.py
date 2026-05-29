@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 
@@ -16,3 +18,17 @@ class Template(Base):
     author = Column(String(120), default="Admin")
     last_modified = Column(DateTime, server_default=func.now(), onupdate=func.now())
     created_at = Column(DateTime, server_default=func.now())
+
+    # Master HTML template — when is_master=True and html_body is set,
+    # quote generation renders through Jinja2 + xhtml2pdf instead of the
+    # legacy ReportLab section pipeline. One master per tenant; the
+    # /api/templates/master endpoints upsert this row.
+    html_body = Column(Text, default="")
+    is_master = Column(Boolean, default=False, index=True)
+    tenant_id = Column(
+        String(36),
+        ForeignKey("tenants.id"),
+        nullable=True,
+        index=True,
+    )
+    tenant = relationship("Tenant", lazy="joined")

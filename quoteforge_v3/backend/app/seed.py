@@ -335,6 +335,71 @@ async def migrate_add_insights_mapping_columns() -> None:
             logger.info("added deal_insight_mappings columns: %s", ", ".join(added))
 
 
+async def migrate_add_template_master_columns() -> None:
+    """
+    One-shot: add Template.html_body / is_master / tenant_id columns and
+    seed one default master row per tenant if none exists.
+
+    Uses SQLAlchemy's inspector so the column-existence check works on
+    both SQLite (the dev/test default) and Postgres (Render). create_all
+    only handles brand-new tables, so existing DBs need an ALTER.
+    """
+    from sqlalchemy import inspect, text
+    from app.core.database import engine
+
+    async with engine.begin() as conn:
+        def _columns(sync_conn):
+            return {c["name"] for c in inspect(sync_conn).get_columns("templates")}
+
+        cols = await conn.run_sync(_columns)
+        added = []
+        if "html_body" not in cols:
+            await conn.execute(text("ALTER TABLE templates ADD COLUMN html_body TEXT"))
+            added.append("html_body")
+        if "is_master" not in cols:
+            await conn.execute(
+                text("ALTER TABLE templates ADD COLUMN is_master BOOLEAN DEFAULT 0")
+            )
+            added.append("is_master")
+        if "tenant_id" not in cols:
+            await conn.execute(
+                text("ALTER TABLE templates ADD COLUMN tenant_id VARCHAR(36)")
+            )
+            added.append("tenant_id")
+        if added:
+            logger.info("added templates columns: %s", ", ".join(added))
+
+    # Seed a default master template for every tenant that doesn't have
+    # one yet. Idempotent — runs every boot; only inserts where missing.
+    from app.services.default_master_template import DEFAULT_MASTER_HTML
+
+    async with async_session() as db:
+        tenants = (await db.execute(select(Tenant))).scalars().all()
+        for tenant in tenants:
+            existing = await db.execute(
+                select(Template).where(
+                    Template.tenant_id == tenant.id,
+                    Template.is_master.is_(True),
+                )
+            )
+            if existing.scalar_one_or_none() is not None:
+                continue
+            db.add(
+                Template(
+                    name="Default Master Template",
+                    type="Proposal",
+                    format="PDF",
+                    status="active",
+                    content="2-page master template — edit the HTML body to rebrand.",
+                    html_body=DEFAULT_MASTER_HTML,
+                    is_master=True,
+                    tenant_id=tenant.id,
+                    author="System",
+                )
+            )
+        await db.commit()
+
+
 async def migrate_add_crm_sync_columns() -> None:
     """
     One-shot: add DocumentLog.crm_synced_at + DocumentLog.crm_external_id.

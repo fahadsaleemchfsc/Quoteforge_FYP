@@ -18,9 +18,11 @@ from app.models.audit_log import AuditLog
 from app.schemas.quote import GenerateRequest
 from app.services.pricing_engine import apply_pricing_rules
 from app.services.ai_service import generate_proposal_sections
-from app.services.document_engine import render_pdf, render_docx
+from app.services.document_engine import render_pdf, render_docx, render_pdf_from_html
 from app.services.delivery_service import send_document_email
 from app.services.crm_service import get_deal_by_id
+from app.models.template import Template
+from app.models.tenant import Tenant
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/quotes", tags=["quotes"])
@@ -111,7 +113,43 @@ async def generate_quote(
     if req.output_format.upper() == "DOCX":
         file_path = render_docx(doc_id, sections, pricing, render_context)
     else:
-        file_path = render_pdf(doc_id, sections, pricing, render_context)
+        # PDF path: prefer the tenant's active HTML master template if one
+        # exists (2-page, brand-styled). Fall back to the legacy section-
+        # based ReportLab renderer if the master is missing or fails — we
+        # never want generate to 500 because the admin's edited HTML had
+        # a syntax error.
+        file_path = None
+        master_q = await db.execute(
+            select(Template).where(
+                Template.tenant_id == tenant_id,
+                Template.is_master.is_(True),
+                Template.status == "active",
+            )
+        )
+        master = master_q.scalar_one_or_none()
+        if master and (master.html_body or "").strip():
+            tenant_row = await db.get(Tenant, tenant_id)
+            html_context = {
+                **render_context,
+                **pricing,
+                "doc_id": doc_id,
+                "doc_type": doc_type,
+                "tenant_name": tenant_row.name if tenant_row else "QuoteForge",
+                "seller_email": current_user.email,
+                "currency_symbol": render_context.get("currency_symbol", "$"),
+            }
+            try:
+                file_path = render_pdf_from_html(doc_id, master.html_body, html_context)
+                master.usage_count = (master.usage_count or 0) + 1
+            except Exception as exc:  # noqa: BLE001 — fall back, don't 500
+                logger.warning(
+                    "Master template render failed for doc %s, falling back: %s",
+                    doc_id,
+                    exc,
+                )
+                file_path = None
+        if file_path is None:
+            file_path = render_pdf(doc_id, sections, pricing, render_context)
 
     generation_time = round(time.time() - start, 2)
 

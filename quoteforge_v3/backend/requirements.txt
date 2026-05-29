@@ -9,6 +9,14 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.19
 reportlab==4.2.5
 python-docx==1.1.2
+# HTML master template → PDF rendering.
+# svglib pinned to <1.5 so we don't pull rlpycairo → pycairo → Cairo C
+# library (which would require libcairo2-dev on Render and `brew install
+# cairo pkg-config` locally). 1.4.x renders SVG via reportlab directly,
+# which is enough for our template needs and keeps the image slim.
+jinja2==3.1.4
+svglib==1.4.1
+xhtml2pdf==0.2.16
 httpx==0.28.1
 openai==1.58.1
 chromadb==0.5.23

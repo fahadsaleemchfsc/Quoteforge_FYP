@@ -1,8 +1,14 @@
 """
 Document Rendering Engine — generates PDF and DOCX documents
 using ReportLab and python-docx.
+
+The HTML master-template path lives in render_pdf_from_html() below: when
+a tenant has an active master template (Template.is_master=True with
+html_body), quote generation routes through Jinja2 + xhtml2pdf instead
+of the section-based ReportLab pipeline. The legacy render_pdf is kept
+as a fallback when no master template is configured.
 """
-import os
+import io
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -11,6 +17,44 @@ logger = logging.getLogger(__name__)
 
 GENERATED_DIR = Path(__file__).resolve().parent.parent.parent / "generated_docs"
 GENERATED_DIR.mkdir(exist_ok=True)
+
+
+def render_pdf_from_html(doc_id: str, html_template: str, context: dict) -> str:
+    """Render a PDF from an HTML/Jinja2 master template.
+
+    `context` should contain the same keys the default master template
+    references (client_name, deal_name, line_items, subtotal, discount,
+    tax, total, currency_symbol, valid_until, etc.) — extras are simply
+    ignored by Jinja2's strict-undefined-off behaviour.
+
+    Uses xhtml2pdf (PISA) so there are no system dependencies on
+    Cairo/wkhtmltopdf — works unchanged in the Render Docker image.
+    """
+    from jinja2 import Environment, BaseLoader, StrictUndefined  # noqa: F401
+    from xhtml2pdf import pisa
+
+    # Lenient undefined → missing context keys render as empty string,
+    # which matches the "show what you have" semantics admins expect when
+    # they tweak the template. Swap to StrictUndefined if you want loud
+    # errors on missing variables.
+    env = Environment(loader=BaseLoader(), autoescape=False)
+    template = env.from_string(html_template)
+    rendered_html = template.render(**context)
+
+    filepath = str(GENERATED_DIR / f"{doc_id}.pdf")
+    with open(filepath, "wb") as fp:
+        pisa_status = pisa.CreatePDF(src=rendered_html, dest=fp)
+
+    if pisa_status.err:
+        # PISA reports recoverable rendering errors via .err; surface
+        # them so the caller can fall back to the legacy renderer
+        # instead of returning a half-baked PDF.
+        raise RuntimeError(
+            f"xhtml2pdf failed to render master template for {doc_id}: "
+            f"{pisa_status.err} errors"
+        )
+    logger.info("HTML→PDF generated: %s", filepath)
+    return filepath
 
 
 def render_pdf(doc_id: str, sections: dict, pricing: dict, context: dict) -> str:
