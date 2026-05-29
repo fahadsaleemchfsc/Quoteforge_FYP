@@ -25,6 +25,19 @@ SALESFORCE_ORIGIN_REGEX = (
 )
 
 
+def _normalise_origin(o: str) -> str:
+    """Add https:// if the operator (or Render's `fromService.host`) hands
+    us a bare hostname. Strip trailing slashes — Starlette's CORS layer
+    does exact-string matching and `https://x.com/` != `https://x.com`.
+    """
+    o = o.strip().rstrip("/")
+    if not o:
+        return o
+    if "://" in o:
+        return o
+    return f"https://{o}"
+
+
 def cors_config() -> dict:
     """Return kwargs ready to splat into add_middleware(CORSMiddleware, **...)."""
     raw = (settings.CORS_ALLOW_ORIGINS or "").strip()
@@ -38,7 +51,7 @@ def cors_config() -> dict:
             "allow_headers": ["*"],
         }
 
-    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    origins = [_normalise_origin(o) for o in raw.split(",") if o.strip()]
     return {
         "allow_origins": origins,
         "allow_origin_regex": SALESFORCE_ORIGIN_REGEX,

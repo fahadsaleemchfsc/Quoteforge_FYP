@@ -1,13 +1,15 @@
-# Render blueprint — one web service + one managed Postgres.
+# Render blueprint — backend (Docker) + frontend (Static) + Postgres.
 #
-# Deploy via render.com → New → Blueprint → point at this repo. Render reads
-# this file, creates both resources, and wires DATABASE_URL into the web
-# service from the database's connection string.
+# Deploy via render.com → New → Blueprint → point at this repo. Render
+# reads this file and provisions all three resources in one go, wiring
+# DATABASE_URL into the backend from the Postgres connection string and
+# VITE_API_BASE_URL into the frontend from the backend's host.
 #
-# All secret env vars are marked `sync: false` so Render prompts for them at
-# blueprint apply time rather than reading the (gitignored) local .env.
+# All secret env vars are marked `sync: false` so Render prompts for
+# them at blueprint apply time rather than reading the (gitignored) .env.
 
 services:
+  # ─── Backend (FastAPI) ───────────────────────────────────────────
   - type: web
     name: quoteforge-backend
     runtime: docker
@@ -18,16 +20,15 @@ services:
     healthCheckPath: /healthz
     autoDeploy: true
     envVars:
-      # Database wired from the managed Postgres below. SQLAlchemy expects
-      # postgresql+asyncpg://...; main.py's database module normalises the
-      # plain postgres:// scheme Render returns.
+      # Postgres connection string. main.py's database module normalises
+      # the plain postgres:// scheme Render returns into postgresql+asyncpg://.
       - key: DATABASE_URL
         fromDatabase:
           name: quoteforge-db
           property: connectionString
 
-      # Public base URL Render assigns to the service. Used to build the
-      # OAuth callback URL and any redirect-back URLs.
+      # Public hostname Render assigns to the service. Used to build
+      # the Salesforce OAuth callback URL and post-consent redirects.
       - key: PUBLIC_BASE_URL
         fromService:
           type: web
@@ -43,7 +44,20 @@ services:
       - key: SALESFORCE_LOGIN_URL
         value: https://login.salesforce.com
 
-      # Secrets — set in Render dashboard, never committed.
+      # CORS — automatically wired to the frontend service's hostname.
+      # cors.py normalises bare hostnames into https://… origins.
+      - key: CORS_ALLOW_ORIGINS
+        fromService:
+          type: web
+          name: quoteforge-frontend
+          property: host
+
+      # Platform super-admin allowlist. Override in the dashboard if
+      # other team members need cross-tenant access too.
+      - key: SUPER_ADMIN_EMAILS
+        value: fahad.saleem@demandzen.com
+
+      # Secrets — set in the Render dashboard, never committed.
       - key: SECRET_KEY
         sync: false
       - key: TOKEN_ENCRYPTION_KEY
@@ -61,11 +75,46 @@ services:
       - key: QF_DEFAULT_USER_PASSWORD
         sync: false
 
-      # CORS — comma-separated origin allowlist. Salesforce Lightning hosts
-      # are matched by regex (see app/core/cors.py) so they don't need to
-      # be listed here.
-      - key: CORS_ALLOW_ORIGINS
-        value: ""
+  # ─── Frontend (Vite static build) ────────────────────────────────
+  - type: web
+    name: quoteforge-frontend
+    runtime: static
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    # Vite reads VITE_API_BASE_URL at build time. Render's host property
+    # is just the bare hostname, so we wrap it with https://…/api in the
+    # build command before invoking vite.
+    buildCommand: |
+      npm install
+      export VITE_API_BASE_URL="https://${QF_BACKEND_HOST}/api"
+      echo "Building with VITE_API_BASE_URL=$VITE_API_BASE_URL"
+      npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: QF_BACKEND_HOST
+        fromService:
+          type: web
+          name: quoteforge-backend
+          property: host
+
+    # Single-page-app fallback: React Router owns the routing, so every
+    # non-asset URL must serve index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    # Long-cache hashed asset bundles; short-cache index.html so users
+    # see new deploys promptly.
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
 
 databases:
   - name: quoteforge-db
