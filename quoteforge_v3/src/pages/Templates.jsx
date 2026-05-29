@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, FileText, Eye, Edit3, Copy } from 'lucide-react';
 import { StatusBadge } from '@/components/ui';
+import MasterTemplateEditor from '@/components/templates/MasterTemplateEditor';
 import { TEMPLATES } from '@/constants/mockData';
 import api from '@/services/api';
 import clsx from 'clsx';
@@ -18,6 +19,11 @@ export default function Templates() {
 
   return (
     <div className="page-enter">
+      {/* ─── Master Template Editor ─────────── */}
+      {/* Drives every generated PDF. Sits above the per-document templates
+          grid because changing it has the broadest impact. */}
+      <MasterTemplateEditor />
+
       {/* ─── Header ──────────────────────────── */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-2">

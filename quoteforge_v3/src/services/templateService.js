@@ -14,6 +14,10 @@ const templateService = {
   duplicate: (id)          => api.post(`/templates/${id}/duplicate`),
   activate:  (id)          => api.patch(`/templates/${id}/activate`),
   archive:   (id)          => api.patch(`/templates/${id}/archive`),
+
+  // Master HTML template — single per tenant, drives every PDF render.
+  getMaster: ()            => api.get('/templates/master'),
+  putMaster: (html_body)   => api.put('/templates/master', { html_body }),
 };
 
 export default templateService;
