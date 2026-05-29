@@ -1,21 +1,32 @@
 # Render blueprint — backend (Docker) + frontend (Static) + Postgres.
 #
-# Deploy via render.com → New → Blueprint → point at this repo. Render
-# reads this file and provisions all three resources in one go, wiring
-# DATABASE_URL into the backend from the Postgres connection string and
-# VITE_API_BASE_URL into the frontend from the backend's host.
+# MUST live at the repo ROOT — Render only reads render.yaml from the
+# repository root. The app itself lives in quoteforge_v3/, so each service
+# sets `rootDir` to point Render at the right subdirectory; all paths below
+# are then relative to that rootDir.
 #
-# All secret env vars are marked `sync: false` so Render prompts for
-# them at blueprint apply time rather than reading the (gitignored) .env.
+# Deploy via render.com → New → Blueprint → point at this repo. Render
+# provisions all three resources in one go, wiring DATABASE_URL into the
+# backend from the Postgres connection string and VITE_API_BASE_URL into
+# the frontend from the backend's host.
+#
+# All secret env vars are marked `sync: false` so Render prompts for them
+# at blueprint apply time rather than reading the (gitignored) .env.
+#
+# Tier: FREE. The backend web service sleeps after ~15min idle (first
+# request after sleep takes ~30s). The free Postgres instance is suspended
+# 90 days after creation. Bump `plan:` to `starter` for always-on + a
+# persistent database.
 
 services:
   # ─── Backend (FastAPI) ───────────────────────────────────────────
   - type: web
     name: quoteforge-backend
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    plan: starter
+    rootDir: quoteforge_v3/backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
     region: oregon
     healthCheckPath: /healthz
     autoDeploy: true
@@ -76,10 +87,11 @@ services:
         sync: false
 
   # ─── Frontend (Vite static build) ────────────────────────────────
+  # Static sites on Render are always free — no `plan` field.
   - type: web
     name: quoteforge-frontend
     runtime: static
-    plan: starter
+    rootDir: quoteforge_v3
     region: oregon
     autoDeploy: true
     # Vite reads VITE_API_BASE_URL at build time. Render's host property
@@ -118,6 +130,6 @@ services:
 
 databases:
   - name: quoteforge-db
-    plan: starter
+    plan: free
     region: oregon
     postgresMajorVersion: "16"
