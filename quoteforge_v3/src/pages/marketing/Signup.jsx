@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Lock, Sparkles, Mail } from 'lucide-react';
 import MarketingNav from '@/components/marketing/MarketingNav';
+import { FloatingOrbs, GlassCard, Reveal } from '@/components/marketing/visuals';
 import api from '@/services/api';
 
 // Public signup page. The backend doesn't expose /auth/register today,
@@ -65,12 +66,21 @@ export default function Signup() {
   };
 
   return (
-    <div className="bg-white text-zinc-900 antialiased min-h-screen flex flex-col">
+    <div className="marketing bg-white text-zinc-900 antialiased min-h-screen flex flex-col relative overflow-hidden">
       <MarketingNav />
 
-      <div className="flex-1 grid md:grid-cols-2 max-w-6xl mx-auto w-full px-6 py-12 md:py-20 gap-14 items-center">
+      {/* Subtle floating decoration behind the whole page */}
+      <div aria-hidden className="m-mesh opacity-60" />
+      <FloatingOrbs
+        orbs={[
+          { x: '-10%', y: '10%', size: 420, color: 'radial-gradient(circle, #8B5CF6, transparent 70%)', delay: '0s'   },
+          { x: '70%',  y: '40%', size: 360, color: 'radial-gradient(circle, #D946EF, transparent 70%)', delay: '-8s'  },
+        ]}
+      />
+
+      <div className="relative flex-1 grid md:grid-cols-2 max-w-6xl mx-auto w-full px-6 py-12 md:py-20 gap-14 items-center">
         {/* Form column */}
-        <div className="max-w-md w-full mx-auto md:mx-0">
+        <Reveal className="max-w-md w-full mx-auto md:mx-0">
           {!waitlisted ? (
             <>
               <h1 className="text-3xl font-bold tracking-tight">Create your workspace</h1>
@@ -135,7 +145,7 @@ export default function Signup() {
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-violet-200 bg-violet-50/40 p-8">
+            <GlassCard className="p-8">
               <div className="w-12 h-12 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center mb-5">
                 <Check size={22} strokeWidth={3} />
               </div>
@@ -158,13 +168,14 @@ export default function Signup() {
               >
                 Sign in with demo account <ArrowRight size={16} />
               </Link>
-            </div>
+            </GlassCard>
           )}
-        </div>
+        </Reveal>
 
         {/* Pitch column */}
-        <div className="hidden md:block">
-          <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-violet-800 text-white p-9 relative overflow-hidden">
+        <Reveal delay={120} className="hidden md:block">
+          <div className="m-stage">
+          <div className="m-tilt rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 text-white p-9 relative overflow-hidden shadow-2xl shadow-violet-300/40">
             <div
               aria-hidden
               className="absolute inset-0 opacity-30"
@@ -201,7 +212,18 @@ export default function Signup() {
               </div>
             </div>
           </div>
-        </div>
+
+          {/* Floating credibility chip */}
+          <div className="absolute -top-3 -right-3 m-float">
+            <GlassCard className="px-3 py-2 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="m-pulse-dot" />
+                <span className="font-mono text-zinc-700">Free tier · live</span>
+              </div>
+            </GlassCard>
+          </div>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

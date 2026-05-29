@@ -1,4 +1,5 @@
 @import './theme.css';
+@import './marketing.css';
 
 @tailwind base;
 @tailwind components;
