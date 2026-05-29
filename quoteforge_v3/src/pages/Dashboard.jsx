@@ -1,7 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { Panel, Pill, Mono, StatRow, StatusBadge } from '@/components/ui';
+import { Reveal, AnimatedCounter } from '@/components/marketing/visuals';
 import api from '@/services/api';
 import clsx from 'clsx';
+
+// Count-up wrapper for KPI values. Animates integer values (e.g. "1,234",
+// "42%", "12s") from 0 → target on view, preserving any prefix/suffix.
+// Falls back to the raw string for decimals or non-numeric values.
+function CountUpValue({ value }) {
+  const raw = String(value);
+  if (raw.includes('.')) return raw;
+  const m = raw.match(/^(\D*)([\d,]+)(\D*)$/);
+  if (!m) return raw;
+  const num = parseInt(m[2].replace(/,/g, ''), 10);
+  if (Number.isNaN(num)) return raw;
+  return <AnimatedCounter to={num} prefix={m[1]} suffix={m[3]} duration={1100} />;
+}
 
 const POLL_MS = 5_000;
 
@@ -173,7 +187,7 @@ function KPIStrip({ metrics }) {
       {metrics.map((m, i) => (
         <div key={i} className="flex items-center gap-6">
           {i > 0 && <span className="text-text-muted">·</span>}
-          <StatRow label={m.label} value={m.value} delta={m.delta} deltaDirection={m.direction} />
+          <StatRow label={m.label} value={<CountUpValue value={m.value} />} delta={m.delta} deltaDirection={m.direction} />
         </div>
       ))}
     </div>
@@ -307,11 +321,13 @@ export default function Dashboard() {
   return (
     <div className="page-enter space-y-4">
       <LiveFeed />
-      <KPIStrip metrics={metrics} />
-      <div className="grid gap-4" style={{ gridTemplateColumns: 'minmax(0, 65%) minmax(0, 35%)' }}>
-        <RecentActivityTable rows={activity} />
-        <IntegrationHealth crms={crms} />
-      </div>
+      <Reveal delay={0}><KPIStrip metrics={metrics} /></Reveal>
+      <Reveal delay={120}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'minmax(0, 65%) minmax(0, 35%)' }}>
+          <RecentActivityTable rows={activity} />
+          <IntegrationHealth crms={crms} />
+        </div>
+      </Reveal>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export default function TopBar({ title, subtitle }) {
   return (
     <>
       <header
-        className="h-14 flex items-center justify-between border-b bg-surface sticky top-0 z-30 px-5"
+        className="h-14 flex items-center justify-between border-b glass-surface sticky top-0 z-30 px-5"
         style={{ borderColor: 'var(--border)' }}
       >
         {/* Left: crumb */}

@@ -82,7 +82,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       className="min-h-screen flex flex-col flex-shrink-0 sticky top-0 z-40 border-r"
       style={{
         width,
-        background: '#0A0A0B',
+        background: 'rgba(10, 10, 11, 0.72)',
+        backdropFilter: 'blur(18px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(18px) saturate(1.3)',
         borderColor: '#27272A',
         transition: 'width 200ms ease',
       }}
