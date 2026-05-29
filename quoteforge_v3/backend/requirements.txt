@@ -18,6 +18,11 @@ langchain-community==0.3.13
 aiosmtplib==3.0.2
 email-validator==2.2.0
 aiosqlite==0.20.0
+# Postgres async driver (Render). SQLAlchemy picks aiosqlite vs asyncpg
+# based on the DATABASE_URL scheme — see app/core/database.py.
+asyncpg==0.30.0
+# Fernet symmetric encryption for Salesforce OAuth tokens at rest.
+cryptography==44.0.0
 # Module 6 — Deal Insights (win probability predictor)
 lightgbm==4.5.0
 shap==0.46.0

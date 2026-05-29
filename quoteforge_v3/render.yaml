@@ -1,0 +1,74 @@
+# Render blueprint — one web service + one managed Postgres.
+#
+# Deploy via render.com → New → Blueprint → point at this repo. Render reads
+# this file, creates both resources, and wires DATABASE_URL into the web
+# service from the database's connection string.
+#
+# All secret env vars are marked `sync: false` so Render prompts for them at
+# blueprint apply time rather than reading the (gitignored) local .env.
+
+services:
+  - type: web
+    name: quoteforge-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    region: oregon
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      # Database wired from the managed Postgres below. SQLAlchemy expects
+      # postgresql+asyncpg://...; main.py's database module normalises the
+      # plain postgres:// scheme Render returns.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: quoteforge-db
+          property: connectionString
+
+      # Public base URL Render assigns to the service. Used to build the
+      # OAuth callback URL and any redirect-back URLs.
+      - key: PUBLIC_BASE_URL
+        fromService:
+          type: web
+          name: quoteforge-backend
+          property: host
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "480"
+
+      - key: SALESFORCE_LOGIN_URL
+        value: https://login.salesforce.com
+
+      # Secrets — set in Render dashboard, never committed.
+      - key: SECRET_KEY
+        sync: false
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SALESFORCE_CLIENT_ID
+        sync: false
+      - key: SALESFORCE_CLIENT_SECRET
+        sync: false
+      - key: QF_DEFAULT_ADMIN_PASSWORD
+        sync: false
+      - key: QF_DEFAULT_USER_PASSWORD
+        sync: false
+
+      # CORS — comma-separated origin allowlist. Salesforce Lightning hosts
+      # are matched by regex (see app/core/cors.py) so they don't need to
+      # be listed here.
+      - key: CORS_ALLOW_ORIGINS
+        value: ""
+
+databases:
+  - name: quoteforge-db
+    plan: starter
+    region: oregon
+    postgresMajorVersion: "16"

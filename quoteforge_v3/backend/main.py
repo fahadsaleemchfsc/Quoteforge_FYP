@@ -16,8 +16,11 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.cors import cors_config
 from app.core.database import init_db
 from app.routers import auth, users, templates, pricing, prompts, crm, quotes, settings, learning, products, approvals, tenant_config, guardrails, negotiations, offers, activity, share_tokens, buyer_room, sf_prompt_to_quote, insights, icp
+from app.integrations import salesforce_oauth as salesforce_oauth_integration
+from app.integrations import salesforce_actions as salesforce_actions_integration
 # Import so SQLAlchemy registers the new tables under Base.metadata before init_db().
 from app.models import tenant as _tenant_model  # noqa: F401
 from app.models import product as _product_model  # noqa: F401
@@ -29,6 +32,7 @@ from app.models import replay_event as _replay_event_model  # noqa: F401
 from app.models import deal_share_token as _deal_share_token_model  # noqa: F401
 from app.models import insights as _insights_models  # noqa: F401 — Module 6 Deal Insights
 from app.models import icp as _icp_models  # noqa: F401 — Phase 3 ICP Builder
+from app.models import salesforce_oauth_token as _sf_oauth_token_model  # noqa: F401 — one-click Connected App flow
 from app.gateway.router import router as gateway_router, register_builtin_tools
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
@@ -102,14 +106,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow frontend dev server
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (Salesforce LWC + frontend + ngrok)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS — exact-match allowlist from CORS_ALLOW_ORIGINS env + regex for
+# Salesforce Lightning hosts (which have per-org subdomains). Empty env
+# var keeps the legacy "*" behaviour for local dev. See app/core/cors.py.
+app.add_middleware(CORSMiddleware, **cors_config())
 
 # Mount all routers under /api prefix
 app.include_router(auth.router, prefix="/api")
@@ -133,10 +133,25 @@ app.include_router(buyer_room.router, prefix="/api")
 app.include_router(sf_prompt_to_quote.router, prefix="/api")
 app.include_router(insights.router, prefix="/api")
 app.include_router(icp.router, prefix="/api")
+# One-click Salesforce Connected App flow — distinct from the legacy
+# /api/crm endpoints which use CRMConnection.oauth_tokens JSON.
+app.include_router(salesforce_oauth_integration.router, prefix="/api")
+app.include_router(salesforce_actions_integration.router, prefix="/api")
 
 # Agent Gateway — mounted at root (NOT /api) so /.well-known and /oauth
 # and /mcp sit at spec-conformant paths for MCP clients.
 app.include_router(gateway_router)
+
+
+@app.get("/healthz", include_in_schema=False)
+async def healthz():
+    """Cheap liveness probe for Render / Docker HEALTHCHECK.
+
+    Intentionally does NOT touch the DB — Render hits this every 30s and
+    we don't want probe traffic competing with real requests on a busy
+    Postgres pool. Use /api/health for richer status.
+    """
+    return {"ok": True}
 
 
 @app.get("/api/health")

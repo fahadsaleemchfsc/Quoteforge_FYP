@@ -23,8 +23,28 @@ class Settings(BaseSettings):
 
     SALESFORCE_CLIENT_ID: str = ""
     SALESFORCE_CLIENT_SECRET: str = ""
+    # login.salesforce.com for prod, test.salesforce.com for sandbox. Apex
+    # admins flip this per packaging org. Used to build /authorize URLs.
+    SALESFORCE_LOGIN_URL: str = "https://login.salesforce.com"
     HUBSPOT_CLIENT_ID: str = ""
     HUBSPOT_CLIENT_SECRET: str = ""
+
+    # Public base URL the backend is reachable at (no trailing slash).
+    # Used to build OAuth callback URLs and the post-consent redirect.
+    # Empty in local dev — code falls back to http://localhost:8000.
+    PUBLIC_BASE_URL: str = ""
+
+    # Fernet key used to encrypt Salesforce OAuth tokens at rest. Generate
+    # with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
+    # Empty in dev → app/core/crypto.py generates an ephemeral key and
+    # logs a warning. Required for any deploy that persists tokens.
+    TOKEN_ENCRYPTION_KEY: str = ""
+
+    # CORS — comma-separated origin allowlist. Empty string keeps the
+    # legacy "*" behaviour for local dev. Production should set this to
+    # the frontend origin (Render web URL, prod app domain, etc.).
+    # Salesforce Lightning hosts are matched via regex in app/core/cors.py.
+    CORS_ALLOW_ORIGINS: str = ""
 
     # Agent Gateway (Module 1)
     GATEWAY_DEV_AUTH: bool = True              # TODO: flip to False once OAuth 2.1 lands
