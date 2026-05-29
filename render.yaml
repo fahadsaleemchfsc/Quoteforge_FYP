@@ -40,12 +40,13 @@ services:
 
       # Public hostname Render assigns to the service. Used to build
       # the Salesforce OAuth callback URL and post-consent redirects.
+      # Bare hostname (no scheme). salesforce_oauth._public_base_url()
+      # prepends https:// before building the OAuth callback URL.
       - key: PUBLIC_BASE_URL
         fromService:
           type: web
           name: quoteforge-backend
           property: host
-          envVarKey: RENDER_EXTERNAL_HOSTNAME
 
       - key: ALGORITHM
         value: HS256
@@ -92,7 +93,6 @@ services:
     name: quoteforge-frontend
     runtime: static
     rootDir: quoteforge_v3
-    region: oregon
     autoDeploy: true
     # Vite reads VITE_API_BASE_URL at build time. Render's host property
     # is just the bare hostname, so we wrap it with https://…/api in the
