@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, Shield, User, AlertCircle, Zap } from 'lucide-react';
 import { useAuth } from '@/context';
 
@@ -189,6 +189,24 @@ export default function Login() {
               {loading ? 'Signing in…' : (<>Sign in <ArrowRight size={14} /></>)}
             </button>
           </form>
+
+          {/* Cross-links to public marketing surface. Keeps Login from
+              being a dead end for fresh visitors who arrived here by
+              accident. */}
+          <div className="mt-4 flex items-center justify-between text-[12.5px]">
+            <Link
+              to="/lp"
+              className="text-text-muted hover:text-text-primary transition-colors"
+            >
+              ← Back to product page
+            </Link>
+            <Link
+              to="/signup"
+              className="font-semibold text-accent hover:underline"
+            >
+              Create workspace →
+            </Link>
+          </div>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">

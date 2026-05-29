@@ -8,6 +8,11 @@ import {
   CRM, Documents, Users, Settings, Login, ShareLinks, BuyerRoom,
   InsightsSetup, InsightsModels, ICPBuilder,
 } from '@pages';
+// Public marketing pages — live outside the AuthProvider so they render
+// with their own visual style (no admin sidebar/topbar).
+import Landing from '@/pages/marketing/Landing';
+import Plans from '@/pages/marketing/Plans';
+import Signup from '@/pages/marketing/Signup';
 
 // ─── Protected Route Wrapper ────────────────────────────────
 function RequireAuth({ children }) {
@@ -79,6 +84,11 @@ export default function App() {
       {/* Public buyer-facing page — completely outside the admin app shell.
           No sidebar, no top bar, no AuthProvider, no login gate. */}
       <Route path="/buy/:token" element={<BuyerRoom />} />
+
+      {/* Public marketing pages — same treatment. */}
+      <Route path="/lp" element={<Landing />} />
+      <Route path="/plans" element={<Plans />} />
+      <Route path="/signup" element={<Signup />} />
 
       {/* Admin app — everything under AuthProvider + login gate */}
       <Route
