@@ -40,13 +40,12 @@ services:
 
       # Public hostname Render assigns to the service. Used to build
       # the Salesforce OAuth callback URL and post-consent redirects.
-      # Bare hostname (no scheme). salesforce_oauth._public_base_url()
-      # prepends https:// before building the OAuth callback URL.
+      # Public external URL of this backend. NOTE: Render's fromService
+      # `property: host` returns the INTERNAL hostname (bare service name),
+      # not the public *.onrender.com host — so it's hardcoded here. Used to
+      # build the Salesforce OAuth callback URL.
       - key: PUBLIC_BASE_URL
-        fromService:
-          type: web
-          name: quoteforge-backend
-          property: host
+        value: https://quoteforge-backend.onrender.com
 
       - key: ALGORITHM
         value: HS256
@@ -56,13 +55,11 @@ services:
       - key: SALESFORCE_LOGIN_URL
         value: https://login.salesforce.com
 
-      # CORS — automatically wired to the frontend service's hostname.
-      # cors.py normalises bare hostnames into https://… origins.
+      # CORS — the public origin of the frontend static site. Hardcoded
+      # for the same reason as PUBLIC_BASE_URL: fromService host gives the
+      # internal name, which would never match the browser's real origin.
       - key: CORS_ALLOW_ORIGINS
-        fromService:
-          type: web
-          name: quoteforge-frontend
-          property: host
+        value: https://quoteforge-frontend.onrender.com
 
       # Platform super-admin allowlist. Override in the dashboard if
       # other team members need cross-tenant access too.
@@ -94,22 +91,18 @@ services:
     runtime: static
     rootDir: quoteforge_v3
     autoDeploy: true
-    # Vite reads VITE_API_BASE_URL at build time. Render's host property
-    # is just the bare hostname, so we wrap it with https://…/api in the
-    # build command before invoking vite.
+    # Vite inlines VITE_API_BASE_URL (from the build env) into the bundle.
+    # Hardcoded to the backend's public URL — Render's fromService host
+    # property returns the internal hostname, which the browser can't reach.
     buildCommand: |
       npm install
-      export VITE_API_BASE_URL="https://${QF_BACKEND_HOST}/api"
       echo "Building with VITE_API_BASE_URL=$VITE_API_BASE_URL"
       npm run build
     staticPublishPath: ./dist
     pullRequestPreviewsEnabled: false
     envVars:
-      - key: QF_BACKEND_HOST
-        fromService:
-          type: web
-          name: quoteforge-backend
-          property: host
+      - key: VITE_API_BASE_URL
+        value: https://quoteforge-backend.onrender.com/api
 
     # Single-page-app fallback: React Router owns the routing, so every
     # non-asset URL must serve index.html.
