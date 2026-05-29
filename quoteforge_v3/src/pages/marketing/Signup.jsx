@@ -52,13 +52,27 @@ export default function Signup() {
       }
       setWaitlisted(true);
     } catch (err) {
-      // 404 (endpoint missing) and 405 (method not allowed) both mean
-      // "self-serve signup isn't wired" — show the waitlist state.
+      // 404/405: endpoint missing → fall back to waitlist UI.
+      // 409: email already used → actionable error, ask them to sign in.
+      // 422: validation (bad email format / short password) → show detail.
+      // Anything else (network drop, 500, etc.) → also fall back so the
+      // user gets a clean exit instead of a raw stack trace.
       const status = err?.response?.status;
+      const detail = err?.response?.data?.detail;
       if (status === 404 || status === 405) {
         setWaitlisted(true);
+      } else if (status === 409) {
+        setError(detail || 'That email is already registered. Sign in instead.');
+      } else if (status === 422) {
+        setError(
+          Array.isArray(detail) ? detail.map((d) => d.msg).join('; ') : (detail || 'Check your inputs and try again.'),
+        );
       } else {
-        setError(err?.response?.data?.detail || err.message || 'Signup failed');
+        // Unexpected — surface what we know, then offer the waitlist
+        // as a recovery path so they're not stuck.
+        setError(
+          `${detail || err.message || 'Signup failed'}. The backend may be starting up — try again in a moment.`,
+        );
       }
     } finally {
       setSubmitting(false);
