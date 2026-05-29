@@ -263,6 +263,22 @@ async def bootstrap_doc_id_counters() -> None:
             )
 
 
+def _column_names(sync_conn, table_name: str) -> set[str]:
+    """Column names for ``table_name`` via SQLAlchemy's inspector — works on
+    both SQLite (dev/test) and Postgres (Render), unlike the SQLite-only
+    ``PRAGMA table_info``. Returns an empty set if the table doesn't exist
+    yet so callers can treat "no table" the same as "no columns".
+
+    Pass to ``await conn.run_sync(_column_names, "<table>")``.
+    """
+    from sqlalchemy import inspect
+
+    insp = inspect(sync_conn)
+    if not insp.has_table(table_name):
+        return set()
+    return {c["name"] for c in insp.get_columns(table_name)}
+
+
 async def migrate_add_insights_v65_columns() -> None:
     """
     Session 6.5 — new columns on deal_insight_models and deal_insight_predictions:
@@ -274,8 +290,7 @@ async def migrate_add_insights_v65_columns() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql("PRAGMA table_info(deal_insight_models)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "deal_insight_models")
         added: list[str] = []
         if "data_quality_tier" not in cols:
             await conn.exec_driver_sql(
@@ -288,8 +303,7 @@ async def migrate_add_insights_v65_columns() -> None:
             )
             added.append("models.holdout_predictions")
 
-        rows = await conn.exec_driver_sql("PRAGMA table_info(deal_insight_predictions)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "deal_insight_predictions")
         if "probability_lower" not in cols:
             await conn.exec_driver_sql(
                 "ALTER TABLE deal_insight_predictions ADD COLUMN probability_lower FLOAT"
@@ -313,8 +327,7 @@ async def migrate_add_insights_mapping_columns() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql("PRAGMA table_info(deal_insight_mappings)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "deal_insight_mappings")
         added: list[str] = []
         if "product_tier_field" not in cols:
             await conn.exec_driver_sql(
@@ -358,7 +371,7 @@ async def migrate_add_template_master_columns() -> None:
             added.append("html_body")
         if "is_master" not in cols:
             await conn.execute(
-                text("ALTER TABLE templates ADD COLUMN is_master BOOLEAN DEFAULT 0")
+                text("ALTER TABLE templates ADD COLUMN is_master BOOLEAN DEFAULT FALSE")
             )
             added.append("is_master")
         if "tenant_id" not in cols:
@@ -409,11 +422,10 @@ async def migrate_add_crm_sync_columns() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql("PRAGMA table_info(document_logs)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "document_logs")
         added = []
         if "crm_synced_at" not in cols:
-            await conn.exec_driver_sql("ALTER TABLE document_logs ADD COLUMN crm_synced_at DATETIME")
+            await conn.exec_driver_sql("ALTER TABLE document_logs ADD COLUMN crm_synced_at TIMESTAMP")
             added.append("crm_synced_at")
         if "crm_external_id" not in cols:
             await conn.exec_driver_sql("ALTER TABLE document_logs ADD COLUMN crm_external_id VARCHAR(64)")
@@ -437,8 +449,7 @@ async def migrate_add_user_tenant_id() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql("PRAGMA table_info(users)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "users")
         if "tenant_id" not in cols:
             await conn.exec_driver_sql(
                 "ALTER TABLE users ADD COLUMN tenant_id VARCHAR(36) "
@@ -494,8 +505,7 @@ async def migrate_add_crm_connections_tenant_id() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql("PRAGMA table_info(crm_connections)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "crm_connections")
         if "tenant_id" not in cols:
             await conn.exec_driver_sql(
                 "ALTER TABLE crm_connections ADD COLUMN tenant_id VARCHAR(36) "
@@ -542,10 +552,7 @@ async def migrate_add_icp_contact_fields() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql(
-            "PRAGMA table_info(ideal_customer_profiles)"
-        )
-        existing = {r[1] for r in rows.fetchall()}
+        existing = await conn.run_sync(_column_names, "ideal_customer_profiles")
         if not existing:
             # Table not yet created — Base.metadata.create_all will produce
             # the new shape directly on next init_db(). Nothing to do here.
@@ -575,8 +582,7 @@ async def migrate_add_negotiation_mode_column() -> None:
     from app.core.database import engine
 
     async with engine.begin() as conn:
-        rows = await conn.exec_driver_sql("PRAGMA table_info(tenant_configs)")
-        cols = {r[1] for r in rows.fetchall()}
+        cols = await conn.run_sync(_column_names, "tenant_configs")
         if "negotiation_mode" in cols:
             return
         await conn.exec_driver_sql(
