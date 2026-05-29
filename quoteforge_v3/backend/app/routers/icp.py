@@ -19,7 +19,7 @@ so stale scores never surface on the Dashboard.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -402,7 +402,7 @@ async def score_opportunity(
     cache_row = ICPMatchScore(
         tenant_id=tenant_id, icp_id=active.id,
         sf_opportunity_id=opportunity_id,
-        match_score=result.match_score, scored_at=datetime.utcnow(),
+        match_score=result.match_score, scored_at=datetime.now(timezone.utc),
     )
     cache_row.match_reasons_list = result.match_reasons
     db.add(cache_row)

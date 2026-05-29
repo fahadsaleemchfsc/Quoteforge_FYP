@@ -18,5 +18,5 @@ class Tenant(Base):
     id = Column(String(36), primary_key=True, default=_new_uuid)
     slug = Column(String(100), unique=True, nullable=False, index=True)
     name = Column(String(200), nullable=False, default="")
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

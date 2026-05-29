@@ -37,7 +37,7 @@ class SalesforceOAuthToken(Base):
     access_token = Column(Text, nullable=False)
     refresh_token = Column(Text, nullable=False)
 
-    issued_at = Column(DateTime, server_default=func.now(), nullable=False)
+    issued_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     # Space-separated scope list as returned by Salesforce. Stored verbatim
     # so we can audit what was actually granted vs requested.
     scopes = Column(String(512), nullable=False, default="")

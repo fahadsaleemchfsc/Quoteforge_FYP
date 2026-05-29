@@ -97,8 +97,8 @@ class IdealCustomerProfile(Base):
 
     is_active = Column(Boolean, nullable=False, default=False)
 
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # ─── JSON accessors ──────────────────────────────────────────
 
@@ -170,7 +170,7 @@ class ICPMatchScore(Base):
     # JSON: list[{"factor": str, "status": "match|mismatch|partial", "detail": str}]
     match_reasons = Column(Text, nullable=False, default="[]")
 
-    scored_at = Column(DateTime, server_default=func.now(), nullable=False)
+    scored_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     @property
     def match_reasons_list(self) -> list[dict[str, Any]]:

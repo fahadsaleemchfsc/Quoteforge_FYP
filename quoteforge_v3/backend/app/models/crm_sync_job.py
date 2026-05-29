@@ -72,9 +72,9 @@ class CRMSyncJob(Base):
     attempts = Column(Integer, nullable=False, default=0)
     last_error = Column(Text, nullable=True)
 
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
-    next_attempt_at = Column(DateTime, server_default=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    next_attempt_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     tenant = relationship("Tenant")
     document_log = relationship("DocumentLog")

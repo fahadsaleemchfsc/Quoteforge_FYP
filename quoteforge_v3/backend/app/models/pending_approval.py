@@ -71,9 +71,9 @@ class PendingApproval(Base):
     reviewer_notes = Column(Text, nullable=True)
     reviewed_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    reviewed_at = Column(DateTime, nullable=True)
-    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
 
     tenant = relationship("Tenant")
     document_log = relationship("DocumentLog")

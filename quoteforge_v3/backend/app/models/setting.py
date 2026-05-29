@@ -9,4 +9,4 @@ class Setting(Base):
     key = Column(String(100), unique=True, nullable=False)
     value = Column(Text, default="")
     category = Column(String(50), default="general")  # general | ai | email | security
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

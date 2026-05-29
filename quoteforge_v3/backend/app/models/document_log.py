@@ -22,10 +22,10 @@ class DocumentLog(Base):
     metadata_json = Column(Text, default="{}")
     user_id = Column(Integer, nullable=True)
     user_name = Column(String(120), default="")
-    generated_at = Column(DateTime, server_default=func.now())
-    delivered_at = Column(DateTime, nullable=True)
-    valid_until = Column(DateTime, nullable=True)  # Proposal expiration date
-    created_at = Column(DateTime, server_default=func.now())
+    generated_at = Column(DateTime(timezone=True), server_default=func.now())
+    delivered_at = Column(DateTime(timezone=True), nullable=True)
+    valid_until = Column(DateTime(timezone=True), nullable=True)  # Proposal expiration date
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     # CRM sync bookkeeping — populated by crm_sync_worker after successful push.
-    crm_synced_at = Column(DateTime, nullable=True)
+    crm_synced_at = Column(DateTime(timezone=True), nullable=True)
     crm_external_id = Column(String(64), nullable=True)  # Salesforce QuoteForge_Document__c Id

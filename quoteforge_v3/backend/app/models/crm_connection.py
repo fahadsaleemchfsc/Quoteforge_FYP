@@ -18,7 +18,7 @@ class CRMConnection(Base):
     api_key = Column(String(500), default="")
     deals_count = Column(Integer, default=0)
     health = Column(Float, default=0.0)
-    last_synced = Column(DateTime, nullable=True)
+    last_synced = Column(DateTime(timezone=True), nullable=True)
     field_mappings = Column(Text, default="[]")       # JSON array
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

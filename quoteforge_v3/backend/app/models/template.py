@@ -16,8 +16,8 @@ class Template(Base):
     file_path = Column(String(500), default="")
     usage_count = Column(Integer, default=0)
     author = Column(String(120), default="Admin")
-    last_modified = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    created_at = Column(DateTime, server_default=func.now())
+    last_modified = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Master HTML template — when is_master=True and html_body is set,
     # quote generation renders through Jinja2 + xhtml2pdf instead of the

@@ -48,8 +48,8 @@ class DealShareToken(Base):
     created_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     label = Column(String(200), nullable=False, default="Buyer quote request")
 
-    expires_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    last_used_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    last_used_at = Column(DateTime(timezone=True), nullable=True)
 
     tenant = relationship("Tenant")

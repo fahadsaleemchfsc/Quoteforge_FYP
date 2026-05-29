@@ -80,8 +80,8 @@ class DealInsightMapping(Base):
 
     auto_suggested = Column(Boolean, nullable=False, default=True)
 
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # ─── Accessors ────────────────────────────────────
     @property
@@ -142,7 +142,7 @@ class DealInsightModel(Base):
     feature_names = Column(Text, nullable=False, default="[]")
     feature_importances = Column(Text, nullable=False, default="[]")
 
-    trained_at = Column(DateTime, server_default=func.now(), nullable=False)
+    trained_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     training_duration_seconds = Column(Float, nullable=False, default=0.0)
     is_active = Column(Boolean, nullable=False, default=False)
 
@@ -222,7 +222,7 @@ class DealInsightPrediction(Base):
     # background task after predict() returns.
     explanation_text = Column(Text, nullable=True)
 
-    predicted_at = Column(DateTime, server_default=func.now(), nullable=False)
+    predicted_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     @property
     def top_drivers_list(self) -> list[dict[str, Any]]:

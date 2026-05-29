@@ -25,4 +25,4 @@ class DocumentIdCounter(Base):
     # in other per-tenant tables (TenantConfig, GuardrailPolicy).
     tenant_id = Column(String(36), primary_key=True)
     last_number = Column(Integer, nullable=False, default=0)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

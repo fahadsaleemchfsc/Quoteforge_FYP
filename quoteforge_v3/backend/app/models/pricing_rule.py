@@ -12,5 +12,5 @@ class PricingRule(Base):
     value = Column(String(100), default="")
     region = Column(String(50), default="Global")
     status = Column(String(20), default="active")   # active | inactive
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

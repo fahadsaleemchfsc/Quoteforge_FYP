@@ -13,4 +13,4 @@ class AuditLog(Base):
     entity_id = Column(String(50), default="")
     details = Column(Text, default="{}")
     ip_address = Column(String(50), default="")
-    timestamp = Column(DateTime, server_default=func.now())
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
