@@ -66,6 +66,10 @@ class Settings(BaseSettings):
     # Base URL that share links embed. Set in .env in prod; sensible dev default.
     BUYER_ROOM_PUBLIC_BASE: str = "http://localhost:3000"
 
+    # Public URL of the deployed frontend. Used for OAuth post-redirect back
+    # to the SPA (e.g. the CRM connect flow). Set in prod; dev default below.
+    FRONTEND_BASE_URL: str = "http://localhost:3000"
+
     # Negotiation AI (Module 3)
     # backend: mlx | ollama | vllm | stub. "stub" is the integration-test
     # backend — pure Python, no model. Use for tests + CI; swap to a real

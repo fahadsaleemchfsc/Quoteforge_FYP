@@ -66,6 +66,14 @@ services:
       - key: SUPER_ADMIN_EMAILS
         value: fahad.saleem@demandzen.com
 
+      # Public frontend URL — embedded in buyer-room share links and used
+      # as the OAuth post-redirect target back into the SPA. Without these,
+      # share links and the CRM connect flow would point at localhost.
+      - key: FRONTEND_BASE_URL
+        value: https://quoteforge-frontend.onrender.com
+      - key: BUYER_ROOM_PUBLIC_BASE
+        value: https://quoteforge-frontend.onrender.com
+
       # Secrets — set in the Render dashboard, never committed.
       - key: SECRET_KEY
         sync: false

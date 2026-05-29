@@ -23,7 +23,9 @@ from app.gateway.money import dollars_to_cents  # noqa: F401 — reserved for ce
 router = APIRouter(prefix="/crm", tags=["crm"])
 logger = logging.getLogger(__name__)
 
-OAUTH_REDIRECT_URI = "http://localhost:8000/api/crm/oauth/callback"
+# Derived from PUBLIC_BASE_URL so the OAuth callback resolves to the
+# deployed backend in prod (and localhost:8000 in dev).
+OAUTH_REDIRECT_URI = f"{(settings.PUBLIC_BASE_URL or 'http://localhost:8000').rstrip('/')}/api/crm/oauth/callback"
 
 
 def _serialize(c: CRMConnection) -> dict:
@@ -212,7 +214,7 @@ async def oauth_callback(
 
     if "error" in tokens:
         # Redirect to frontend with error
-        return RedirectResponse(url=f"http://localhost:3000/crm?error={tokens['error']}")
+        return RedirectResponse(url=f"{settings.FRONTEND_BASE_URL.rstrip('/')}/crm?error={tokens['error']}")
 
     # Store tokens in database
     conn = await store_salesforce_tokens(db, tokens, environment)
@@ -232,7 +234,7 @@ async def oauth_callback(
             pass
 
     # Redirect to frontend CRM page with success
-    return RedirectResponse(url="http://localhost:3000/crm?connected=salesforce")
+    return RedirectResponse(url=f"{settings.FRONTEND_BASE_URL.rstrip('/')}/crm?connected=salesforce")
 
 
 @router.get("/salesforce/opportunities")
