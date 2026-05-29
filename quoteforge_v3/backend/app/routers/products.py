@@ -174,7 +174,7 @@ async def delete_product(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
     tenant_id: str = Depends(get_current_tenant_id),
-) -> None:
+):
     product = await _get_or_404(db, tenant_id, product_id)
     await db.delete(product)
     await db.commit()
