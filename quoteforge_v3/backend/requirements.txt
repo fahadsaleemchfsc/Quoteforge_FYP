@@ -10,6 +10,10 @@ pydantic[email]==2.12.5
 pydantic-settings==2.13.1
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+# Pin bcrypt: passlib 1.7.4's init self-test hashes an 80-byte secret, which
+# bcrypt>=4.1 rejects ("password cannot be longer than 72 bytes"). 4.0.1
+# still truncates silently and matches the locally-tested version.
+bcrypt==4.0.1
 python-multipart==0.0.19
 reportlab==4.2.5
 python-docx==1.1.2
