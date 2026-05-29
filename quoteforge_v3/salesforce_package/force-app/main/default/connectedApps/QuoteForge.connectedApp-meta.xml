@@ -11,7 +11,7 @@
     and paste them into Render as SALESFORCE_CLIENT_ID and
     SALESFORCE_CLIENT_SECRET.
 
-    BEFORE DEPLOY: replace `YOUR-RENDER-SERVICE.onrender.com` in
+    BEFORE DEPLOY: replace `quoteforge-backend.onrender.com` in
     <callbackUrl> below with the actual hostname Render assigns. The URL
     must match exactly — Salesforce rejects callbacks that don't.
 -->
@@ -20,7 +20,7 @@
     <label>QuoteForge</label>
     <description>One-click connection between Salesforce and the QuoteForge AI quote/proposal generation backend.</description>
     <oauthConfig>
-        <callbackUrl>https://YOUR-RENDER-SERVICE.onrender.com/api/integrations/salesforce/callback</callbackUrl>
+        <callbackUrl>https://quoteforge-backend.onrender.com/api/integrations/salesforce/callback</callbackUrl>
         <isAdminApproved>false</isAdminApproved>
         <isConsumerSecretOptional>false</isConsumerSecretOptional>
         <isIntrospectAllTokens>false</isIntrospectAllTokens>

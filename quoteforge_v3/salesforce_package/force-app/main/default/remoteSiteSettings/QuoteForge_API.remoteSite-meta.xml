@@ -5,13 +5,13 @@
     entry covers anything that bypasses it (e.g. older Visualforce or
     JavaScript fetches).
 
-    BEFORE DEPLOY: replace `YOUR-RENDER-SERVICE.onrender.com` with the
+    BEFORE DEPLOY: replace `quoteforge-backend.onrender.com` with the
     actual hostname Render assigns to the backend.
 -->
 <RemoteSiteSetting xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>QuoteForge_API</fullName>
     <description>QuoteForge Backend API (Render-hosted)</description>
     <isActive>true</isActive>
-    <url>https://YOUR-RENDER-SERVICE.onrender.com</url>
+    <url>https://quoteforge-backend.onrender.com</url>
     <disableProtocolSecurity>false</disableProtocolSecurity>
 </RemoteSiteSetting>
